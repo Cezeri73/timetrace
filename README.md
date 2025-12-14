@@ -45,7 +45,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/timetrace.git
+git clone https://github.com/Cezeri73/timetrace.git
 cd timetrace
 
 # Install dependencies
@@ -147,8 +147,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### 📧 Contact & Support
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/timetrace/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/timetrace/discussions)
+- **Issues:** [GitHub Issues](https://github.com/Cezeri73/timetrace/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/Cezeri73/timetrace/discussions)
 
 ---
 
@@ -292,6 +292,6 @@ Bu proje MIT Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LIC
 
 Made with ❤️ by developers, for developers
 
-**[⭐ Star this repo](https://github.com/yourusername/timetrace)** if you find it useful!
+**[⭐ Star this repo](https://github.com/Cezeri73/timetrace)** if you find it useful!
 
 </div>

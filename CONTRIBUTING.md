@@ -44,7 +44,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ```bash
 # Clone your fork
-git clone https://github.com/your-username/timetrace.git
+git clone https://github.com/Cezeri73/timetrace.git
 cd timetrace
 
 # Create a virtual environment
