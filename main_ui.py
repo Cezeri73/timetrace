@@ -4,10 +4,51 @@ Modern GUI using CustomTkinter with tabbed interface
 """
 
 import customtkinter as ctk
-from typing import Callable
+from typing import Callable, Dict, List
 from database_manager import DatabaseManager
 from config_manager import ConfigManager
 from monitor_service import AppMonitor
+
+
+# Uygulama Kategorileri
+APP_CATEGORIES = {
+    "🎮 Oyunlar": [
+        "valorant.exe", "leagueclient.exe", "riotclientservices.exe",
+        "csgo.exe", "dota2.exe", "elden ring.exe", "minecraft.exe",
+        "fortnite.exe", "apex.exe", "overwatch2.exe"
+    ],
+    "🌐 Tarayıcılar": [
+        "chrome.exe", "firefox.exe", "msedge.exe", "brave.exe",
+        "opera.exe", "vivaldi.exe", "chromium.exe", "iexplore.exe"
+    ],
+    "💬 İletişim": [
+        "discord.exe", "telegram.exe", "slack.exe", "whatsapp.exe",
+        "skype.exe", "zoom.exe", "teams.exe", "messenger.exe"
+    ],
+    "📝 Metin & Ofis": [
+        "notepad.exe", "notepad++.exe", "code.exe", "winword.exe",
+        "excel.exe", "powerpnt.exe", "adobephotoshop.exe", "gimp.exe"
+    ],
+    "🎵 Medya & Tasarım": [
+        "spotify.exe", "vlc.exe", "audacity.exe", "obs64.exe",
+        "blender.exe", "clip studio.exe", "aseprite.exe"
+    ],
+    "⚙️ Geliştirme Araçları": [
+        "pycharm64.exe", "clion64.exe", "idea64.exe", "visual studio.exe",
+        "git.exe", "docker.exe", "nodejs.exe", "java.exe"
+    ],
+    "📊 Diğer Uygulamalar": []
+}
+
+# Sistem Processlerini Filtrele (gösterilmeyecekler)
+SYSTEM_PROCESSES = {
+    "system.exe", "svchost.exe", "csrss.exe", "lsass.exe",
+    "services.exe", "smss.exe", "explorer.exe", "dwm.exe",
+    "searchindexer.exe", "nvcontainer.exe", "spoolsv.exe",
+    "conhost.exe", "rundll32.exe", "wininit.exe", "taskhost.exe",
+    "audiodg.exe", "sqlwriter.exe", "mysqld.exe", "nvidia.exe",
+    "igfxem.exe", "igfxhk.exe", "amd.exe", "nvwmi.exe"
+}
 
 
 class TimeTraceUI:
@@ -113,6 +154,46 @@ class TimeTraceUI:
             font=ctk.CTkFont(size=12)
         )
         instructions.pack(pady=5)
+        
+        # Popular apps section
+        popular_frame = ctk.CTkFrame(self.tab_settings)
+        popular_frame.pack(pady=10, padx=20, fill="x")
+        
+        popular_label = ctk.CTkLabel(
+            popular_frame,
+            text="⭐ Popüler Uygulamalar (Hızlı Ekle):",
+            font=ctk.CTkFont(size=14, weight="bold")
+        )
+        popular_label.pack(pady=5, anchor="w")
+        
+        # Popular apps buttons frame
+        buttons_frame = ctk.CTkScrollableFrame(
+            popular_frame,
+            width=600,
+            height=60,
+            orientation="horizontal"
+        )
+        buttons_frame.pack(pady=5, padx=10, fill="x")
+        
+        # Popüler uygulamalar listesi
+        popular_apps = [
+            ("Chrome", "chrome.exe"),
+            ("Firefox", "firefox.exe"),
+            ("Discord", "discord.exe"),
+            ("VS Code", "code.exe"),
+            ("Valorant", "valorant.exe"),
+            ("Notepad++", "notepad++.exe"),
+        ]
+        
+        for app_label, app_exe in popular_apps:
+            btn = ctk.CTkButton(
+                buttons_frame,
+                text=f"+ {app_label}",
+                command=lambda exe=app_exe: self._quick_add_app(exe),
+                width=80,
+                height=30
+            )
+            btn.pack(side="left", padx=5, pady=5)
         
         # Running apps section
         running_apps_frame = ctk.CTkFrame(self.tab_settings)
@@ -298,7 +379,7 @@ class TimeTraceUI:
         print("[TimeTraceUI] Watchlist refreshed")
     
     def _refresh_running_apps(self):
-        """Refresh the list of currently running applications."""
+        """Refresh the list of currently running applications with categories."""
         import psutil
         
         # Clear textbox
@@ -311,25 +392,64 @@ class TimeTraceUI:
                 try:
                     proc_name = proc.info['name']
                     if proc_name and proc_name.lower().endswith('.exe'):
-                        running_processes.add(proc_name.lower())
+                        # Sistem processlerini filtrele
+                        if proc_name.lower() not in SYSTEM_PROCESSES:
+                            running_processes.add(proc_name.lower())
                 except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                     continue
             
-            # Sort and display
-            if running_processes:
-                sorted_apps = sorted(running_processes)
-                display_text = "Tıklayarak kopyalayabilirsiniz:\n\n"
-                display_text += "\n".join(f"• {app}" for app in sorted_apps[:50])  # Show first 50
-                if len(sorted_apps) > 50:
-                    display_text += f"\n\n... ve {len(sorted_apps) - 50} tane daha"
+            # Uygulamaları kategorize et
+            categorized_apps = self._categorize_apps(running_processes)
+            
+            if any(apps for apps in categorized_apps.values()):
+                display_text = "📱 Çalışan Uygulamalar (Kategorilere Göre):\n\n"
+                
+                for category, apps in categorized_apps.items():
+                    if apps:
+                        display_text += f"{category}\n"
+                        for app in sorted(apps):
+                            display_text += f"  • {app}\n"
+                        display_text += "\n"
+                
                 self.running_apps_listbox.insert("1.0", display_text)
             else:
-                self.running_apps_listbox.insert("1.0", "Çalışan uygulama bulunamadı.")
+                self.running_apps_listbox.insert("1.0", "Çalışan normal uygulama bulunamadı.\n(Sistem hizmetleri gösterilmemiştir)")
             
         except Exception as e:
             self.running_apps_listbox.insert("1.0", f"Hata: {e}")
         
         print("[TimeTraceUI] Running apps refreshed")
+    
+    def _categorize_apps(self, running_apps: set) -> Dict[str, List[str]]:
+        """
+        Kategorize the running applications.
+        
+        Args:
+            running_apps: Set of running application names
+            
+        Returns:
+            Dictionary with categories as keys and lists of apps as values
+        """
+        categorized = {}
+        
+        # Tüm kategorileri başlat
+        for category in APP_CATEGORIES.keys():
+            categorized[category] = []
+        
+        # Uygulamaları kategorilere ata
+        for app in running_apps:
+            found = False
+            for category, apps in APP_CATEGORIES.items():
+                if app in apps:
+                    categorized[category].append(app)
+                    found = True
+                    break
+            
+            # Kategoriye ait değilse "Diğer" kategorisine ekle
+            if not found:
+                categorized["📊 Diğer Uygulamalar"].append(app)
+        
+        return categorized
     
     def _setup_help_tab(self):
         """Setup the Help/Tutorial tab."""
@@ -535,6 +655,22 @@ class TimeTraceUI:
         if success:
             self._show_success(f"{app_name} izleme listesine eklendi ✓")
             self.app_entry.delete(0, 'end')
+            self._refresh_watchlist()
+        else:
+            self._show_error(f"{app_name} zaten izleme listesinde")
+    
+    def _quick_add_app(self, app_name: str):
+        """
+        Quickly add a popular app to watchlist.
+        
+        Args:
+            app_name: Executable name to add
+        """
+        # Add to config
+        success = self.config_manager.add_app(app_name)
+        
+        if success:
+            self._show_success(f"{app_name} izleme listesine eklendi ✓")
             self._refresh_watchlist()
         else:
             self._show_error(f"{app_name} zaten izleme listesinde")
