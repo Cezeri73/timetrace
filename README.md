@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![Download Installer](https://img.shields.io/badge/Download-Installer-blue)](install.ps1)
-[![Download EXE](https://img.shields.io/badge/Download-EXE-darkgreen)](https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace.exe)
+[![Download EXE](https://img.shields.io/badge/Download-EXE-darkgreen)](https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace-v1.0.0.zip)
 
 **[English](#english)** | **[Türkçe](#turkish)**
 
@@ -57,9 +57,11 @@ On Windows, you can use the one-click installer:
 
 Download the prebuilt EXE and double‑click (no Python required):
 
-1. Direct link (latest): https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace.exe
-2. Or visit Releases: https://github.com/Cezeri73/timetrace/releases and grab `TimeTrace.exe`
-3. Double‑click to run
+1. Download ZIP: https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace-v1.0.0.zip
+2. Extract the ZIP file
+3. Double‑click `TimeTrace.exe` to run
+
+Or visit Releases: https://github.com/Cezeri73/timetrace/releases
 
 #### Installation (Manual)
 
@@ -206,9 +208,11 @@ Windows için tek tıkla kurulum kullanabilirsiniz:
 
 Önceden derlenmiş EXE’yi indirip çift tıklayın (Python gerekmez):
 
-1. Direkt bağlantı (son sürüm): https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace.exe
-2. Alternatif: GitHub Releases sayfasından `TimeTrace.exe` indirin: https://github.com/Cezeri73/timetrace/releases
-3. Çift tıklayın ve çalıştırın
+1. ZIP indir: https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace-v1.0.0.zip
+2. ZIP dosyasını çıkart
+3. `TimeTrace.exe` dosyasına çift tıklayın
+
+Alternatif: GitHub Releases sayfası: https://github.com/Cezeri73/timetrace/releases
 2. Dosyaya sağ tıklayın ve "PowerShell ile Çalıştır" seçin.
 3. Politika uyarısı görürseniz: `powershell -ExecutionPolicy Bypass -File install.ps1` komutunu çalıştırın.
 4. En son kodu indirir, sanal ortam oluşturur, bağımlılıkları kurar ve kısayolları ekler.
