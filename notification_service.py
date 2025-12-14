@@ -71,7 +71,9 @@ class NotificationService:
         """Main notification monitoring loop."""
         while self.running:
             try:
-                self._check_thresholds()
+                # Skip during quiet hours or snooze
+                if not self._is_quiet_hours() and not self._is_snoozed():
+                    self._check_thresholds()
                 time.sleep(60)  # Check every minute
             except Exception as e:
                 print(f"[NotificationService] Error in notification loop: {e}")
@@ -158,6 +160,11 @@ class NotificationService:
                     duration=10,
                     threaded=True
                 )
+                # Record a short snooze if configured
+                snooze_minutes = int(self.config_manager.get_setting("notification_snooze_minutes") or 0)
+                if snooze_minutes > 0:
+                    from datetime import timedelta
+                    self._snooze_until = datetime.now() + timedelta(minutes=snooze_minutes)
             print(f"[NotificationService] Notification sent: {message}")
         except Exception as e:
             print(f"[NotificationService] Error sending notification: {e}")
@@ -194,3 +201,30 @@ class NotificationService:
         """Reset all thresholds to defaults."""
         self.config_manager.set_setting("notification_thresholds", self.default_thresholds.copy())
         print("[NotificationService] Thresholds reset to defaults")
+
+    # Quiet hours and Snooze helpers
+    def _is_quiet_hours(self) -> bool:
+        """Return True if current time falls within quiet hours."""
+        try:
+            start = self.config_manager.get_setting("quiet_hours_start")  # e.g., "22:00"
+            end = self.config_manager.get_setting("quiet_hours_end")      # e.g., "07:00"
+            if not start or not end:
+                return False
+            now = datetime.now().time()
+            from datetime import datetime as dt
+            s = dt.strptime(start, "%H:%M").time()
+            e = dt.strptime(end, "%H:%M").time()
+            if s < e:
+                return s <= now <= e
+            else:
+                # Over midnight
+                return now >= s or now <= e
+        except Exception:
+            return False
+
+    def _is_snoozed(self) -> bool:
+        """Return True if notifications are snoozed until a future time."""
+        try:
+            return hasattr(self, "_snooze_until") and self._snooze_until and datetime.now() < self._snooze_until
+        except Exception:
+            return False

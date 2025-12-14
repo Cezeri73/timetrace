@@ -248,6 +248,14 @@ class TimeTraceUI:
             width=120
         )
         category_btn.pack(side="left", padx=5)
+
+        compare_btn = ctk.CTkButton(
+            chart_frame,
+            text="📊 Karşılaştır (Hafta)",
+            command=lambda: self._plot_compare_chart(),
+            width=140
+        )
+        compare_btn.pack(side="left", padx=5)
         
         # Chart period selector
         period_label = ctk.CTkLabel(
@@ -508,6 +516,55 @@ class TimeTraceUI:
             canvas.draw()
             canvas.get_tk_widget().pack(fill="both", expand=True)
             
+        except Exception as e:
+            error_label = ctk.CTkLabel(
+                self.chart_canvas_frame,
+                text=f"Grafik oluşturma hatası: {str(e)}",
+                font=ctk.CTkFont(size=12),
+                text_color="#FF6B6B"
+            )
+            error_label.pack(pady=20)
+            print(f"[TimeTraceUI] Chart error: {e}")
+
+    def _plot_compare_chart(self):
+        """Compare last 7 days vs previous 7 days total hours."""
+        self.chart_type_var.set("compare")
+        
+        for widget in self.chart_canvas_frame.winfo_children():
+            widget.destroy()
+        
+        try:
+            from datetime import datetime, timedelta
+            today = datetime.now().date()
+            
+            def _range_total(start, end):
+                stats = self.db_manager.get_stats_for_date_range(start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+                return sum(stats.values())/3600 if stats else 0
+            
+            # Last 7 days
+            end1 = today
+            start1 = today - timedelta(days=6)
+            total1 = _range_total(start1, end1)
+            
+            # Previous 7 days
+            end2 = start1 - timedelta(days=1)
+            start2 = end2 - timedelta(days=6)
+            total2 = _range_total(start2, end2)
+            
+            fig = Figure(figsize=(6,4), dpi=100)
+            ax = fig.add_subplot(111)
+            labels = ["Son 7 Gün", "Önceki 7 Gün"]
+            values = [total1, total2]
+            bars = ax.bar(labels, values, color=['#1f538d','#3d9dd9'])
+            ax.set_ylabel('Saat (hours)', fontsize=10, fontweight='bold')
+            ax.set_title('Haftalık Karşılaştırma', fontsize=12, fontweight='bold')
+            ax.grid(axis='y', alpha=0.3)
+            for bar, val in zip(bars, values):
+                ax.text(bar.get_x()+bar.get_width()/2, bar.get_height(), f"{val:.1f}h", ha='center', va='bottom', fontsize=9)
+            fig.tight_layout()
+            canvas = FigureCanvasTkAgg(fig, master=self.chart_canvas_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill="both", expand=True)
         except Exception as e:
             error_label = ctk.CTkLabel(
                 self.chart_canvas_frame,
@@ -1451,6 +1508,73 @@ class TimeTraceUI:
         )
         db_label.pack(anchor="w", padx=10, pady=10)
         
+        # Export options
+        export_opts_frame = ctk.CTkFrame(settings_frame)
+        export_opts_frame.pack(fill="x", padx=10, pady=10)
+        
+        export_dir_label = ctk.CTkLabel(
+            export_opts_frame,
+            text="📁 Dışa Aktarım Klasörü:",
+            font=ctk.CTkFont(size=12, weight="bold")
+        )
+        export_dir_label.pack(side="left", padx=10)
+        
+        # Load export directory from config
+        current_export_dir = self.config_manager.get_setting("export_directory") or ""
+        self.export_dir_var = ctk.StringVar(value=current_export_dir)
+        
+        export_dir_entry = ctk.CTkEntry(
+            export_opts_frame,
+            textvariable=self.export_dir_var,
+            width=320
+        )
+        export_dir_entry.pack(side="left", padx=5)
+        
+        def _choose_export_dir():
+            try:
+                from tkinter import filedialog
+                # Use underlying tkinter dialog for directory selection
+                path = filedialog.askdirectory()
+                if path:
+                    self.export_dir_var.set(path)
+                    self.config_manager.set_setting("export_directory", path)
+            except Exception as e:
+                print(f"[TimeTraceUI] Export dir choose error: {e}")
+        
+        export_dir_btn = ctk.CTkButton(
+            export_opts_frame,
+            text="Seç",
+            command=_choose_export_dir,
+            width=60
+        )
+        export_dir_btn.pack(side="left", padx=5)
+        
+        # Export range presets
+        presets_frame = ctk.CTkFrame(settings_frame)
+        presets_frame.pack(fill="x", padx=10, pady=10)
+        
+        presets_label = ctk.CTkLabel(
+            presets_frame,
+            text="🗓️ Dışa Aktarım Aralığı:",
+            font=ctk.CTkFont(size=12, weight="bold")
+        )
+        presets_label.pack(side="left", padx=10)
+        
+        self.export_range_var = ctk.StringVar(value=self.config_manager.get_setting("export_range") or "month")
+        
+        def _set_export_range(val: str):
+            self.export_range_var.set(val)
+            self.config_manager.set_setting("export_range", val)
+        
+        for label, val in [("Bugün","today"),("7 Gün","week"),("30 Gün","month"),("Özel","custom")]:
+            btn = ctk.CTkButton(
+                presets_frame,
+                text=label,
+                command=lambda v=val: _set_export_range(v),
+                width=70
+            )
+            btn.pack(side="left", padx=4)
+        
         # Clear old data button
         clear_btn = ctk.CTkButton(
             settings_frame,
@@ -1558,11 +1682,23 @@ class TimeTraceUI:
         """Export usage data to CSV file."""
         import csv
         from datetime import datetime
+        import os
         
         try:
+            export_dir = self.export_dir_var.get().strip() if hasattr(self, 'export_dir_var') else ""
+            if export_dir and not os.path.isdir(export_dir):
+                os.makedirs(export_dir, exist_ok=True)
             filename = f"timetraces_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            abs_path = os.path.abspath(os.path.join(export_dir or "", filename))
             
-            stats = self.db_manager.get_month_stats()
+            # Determine export range
+            range_sel = self.export_range_var.get() if hasattr(self, 'export_range_var') else "month"
+            if range_sel == "today":
+                stats = self.db_manager.get_today_stats()
+            elif range_sel == "week":
+                stats = self.db_manager.get_week_stats()
+            else:
+                stats = self.db_manager.get_month_stats()
             
             with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
@@ -1572,17 +1708,35 @@ class TimeTraceUI:
                     hours = seconds / 3600
                     writer.writerow([app_name, f"{hours:.2f}"])
             
-            # Show success message
+            # Show success message with full path
             message = ctk.CTkLabel(
                 self.tab_advanced_settings,
-                text=f"✓ Veriler {filename} olarak dışa aktarıldı!",
+                text=f"✓ Veriler dışa aktarıldı:\n{abs_path}",
                 font=ctk.CTkFont(size=12, weight="bold"),
                 text_color="#00FF00"
             )
             message.pack(pady=10)
-            self.root.after(3000, message.destroy)
+            # Keep message visible longer for user to note path
+            self.root.after(7000, message.destroy)
             
-            print(f"[TimeTraceUI] Data exported to {filename}")
+            # Provide button to open the folder in Explorer
+            def _open_export_folder():
+                try:
+                    os.startfile(os.path.dirname(abs_path))
+                except Exception as e:
+                    print(f"[TimeTraceUI] Error opening folder: {e}")
+            
+            open_btn = ctk.CTkButton(
+                self.tab_advanced_settings,
+                text="📂 Klasörü Aç",
+                command=_open_export_folder,
+                width=140
+            )
+            open_btn.pack(pady=5)
+            # Auto-remove the button after some time
+            self.root.after(15000, open_btn.destroy)
+            
+            print(f"[TimeTraceUI] Data exported to {abs_path}")
             
         except Exception as e:
             print(f"[TimeTraceUI] Error exporting data: {e}")

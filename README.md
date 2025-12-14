@@ -41,7 +41,16 @@
 - **Python 3.10+**
 - **Windows OS**
 
-#### Installation
+#### Installation (Quick)
+
+On Windows, you can use the one-click installer:
+
+1. Download `install.ps1` from the repository root.
+2. Right-click the file and select "Run with PowerShell".
+3. It will download the latest code, create a virtual environment, and install dependencies.
+4. At the end, it prints the exact command to run the app.
+
+#### Installation (Manual)
 
 ```bash
 # Clone the repository
@@ -177,11 +186,25 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Python 3.10+**
 - **Windows OS**
 
-#### Kurulum
+#### Kurulum (Hızlı)
+
+Windows için tek tıkla kurulum kullanabilirsiniz:
+
+1. Depo kök klasöründen `install.ps1` dosyasını indirin.
+2. Dosyaya sağ tıklayın ve "PowerShell ile Çalıştır" seçin.
+3. En son kodu indirir, sanal ortam oluşturur ve bağımlılıkları kurar.
+4. Sonunda uygulamayı çalıştırmak için komutu görüntüler.
+
+#### Kurulum (Manuel)
 
 ```bash
 # Depoyu klonlayın
-git clone https://github.com/yourusername/timetrace.git
+git clone https://github.com/Cezeri73/timetrace.git
+### 📤 Dışa Aktarım
+
+**🔧 Gelişmiş Ayarlar** sekmesinden CSV dışa aktarımı yapabilirsiniz.
+Uygulama dışa aktarımdan sonra dosyanın tam yolunu gösterir ve **Klasörü Aç** butonu sunar.
+Ayrıca dışa aktarılan klasörü ve aralığı (Bugün / 7 Gün / 30 Gün) ayarlayabilirsiniz.
 cd timetrace
 
 # Bağımlılıkları kurun
