@@ -8,6 +8,11 @@ from typing import Callable, Dict, List
 from database_manager import DatabaseManager
 from config_manager import ConfigManager
 from monitor_service import AppMonitor
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from datetime import datetime, timedelta
+import psutil
 
 
 # Uygulama Kategorileri
@@ -98,11 +103,13 @@ class TimeTraceUI:
         
         # Add tabs
         self.tab_dashboard = self.tabview.add("📊 Dashboard")
+        self.tab_charts = self.tabview.add("📈 Grafikler")
         self.tab_settings = self.tabview.add("⚙️ Watchlist")
         self.tab_help = self.tabview.add("❓ Nasıl Kullanılır")
         
         # Setup each tab
         self._setup_dashboard_tab()
+        self._setup_charts_tab()
         self._setup_settings_tab()
         self._setup_help_tab()
     
@@ -183,6 +190,322 @@ class TimeTraceUI:
         """
         self.period_var.set(period)
         self._refresh_dashboard()
+    
+    def _setup_charts_tab(self):
+        """Setup the Charts tab with matplotlib visualizations."""
+        # Title
+        title_label = ctk.CTkLabel(
+            self.tab_charts,
+            text="Kullanım Trendleri ve Grafikler",
+            font=ctk.CTkFont(size=24, weight="bold")
+        )
+        title_label.pack(pady=20)
+        
+        # Chart type selector
+        chart_frame = ctk.CTkFrame(self.tab_charts)
+        chart_frame.pack(pady=10)
+        
+        chart_label = ctk.CTkLabel(
+            chart_frame,
+            text="Grafik Türü:",
+            font=ctk.CTkFont(size=12, weight="bold")
+        )
+        chart_label.pack(side="left", padx=10)
+        
+        self.chart_type_var = ctk.StringVar(value="top_apps")
+        
+        top_apps_btn = ctk.CTkButton(
+            chart_frame,
+            text="🏆 En Çok Kullanılan",
+            command=lambda: self._plot_top_apps_chart(),
+            width=120
+        )
+        top_apps_btn.pack(side="left", padx=5)
+        
+        trend_btn = ctk.CTkButton(
+            chart_frame,
+            text="📉 Günlük Trend",
+            command=lambda: self._plot_daily_trend_chart(),
+            width=120
+        )
+        trend_btn.pack(side="left", padx=5)
+        
+        category_btn = ctk.CTkButton(
+            chart_frame,
+            text="🎯 Kategori Dağılımı",
+            command=lambda: self._plot_category_chart(),
+            width=120
+        )
+        category_btn.pack(side="left", padx=5)
+        
+        # Chart period selector
+        period_label = ctk.CTkLabel(
+            chart_frame,
+            text="Dönem:",
+            font=ctk.CTkFont(size=12, weight="bold")
+        )
+        period_label.pack(side="left", padx=10)
+        
+        self.chart_period_var = ctk.StringVar(value="week")
+        
+        week_btn = ctk.CTkButton(
+            chart_frame,
+            text="Hafta",
+            command=lambda: self._set_chart_period("week"),
+            width=80
+        )
+        week_btn.pack(side="left", padx=5)
+        
+        month_btn = ctk.CTkButton(
+            chart_frame,
+            text="Ay",
+            command=lambda: self._set_chart_period("month"),
+            width=80
+        )
+        month_btn.pack(side="left", padx=5)
+        
+        # Canvas frame for charts
+        self.chart_canvas_frame = ctk.CTkFrame(self.tab_charts)
+        self.chart_canvas_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Initial chart
+        self._plot_top_apps_chart()
+    
+    def _set_chart_period(self, period: str):
+        """Set chart period and refresh."""
+        self.chart_period_var.set(period)
+        chart_type = self.chart_type_var.get() if hasattr(self, 'chart_type_var') else "top_apps"
+        if chart_type == "top_apps":
+            self._plot_top_apps_chart()
+        elif chart_type == "trend":
+            self._plot_daily_trend_chart()
+        else:
+            self._plot_category_chart()
+    
+    def _plot_top_apps_chart(self):
+        """Plot top 10 most used apps."""
+        self.chart_type_var.set("top_apps")
+        
+        # Clear previous chart
+        for widget in self.chart_canvas_frame.winfo_children():
+            widget.destroy()
+        
+        try:
+            period = self.chart_period_var.get() if hasattr(self, 'chart_period_var') else "week"
+            
+            if period == "week":
+                stats = self.db_manager.get_week_stats()
+                title = "Son 7 Gün - En Çok Kullanılan Uygulamalar (Top 10)"
+            else:
+                stats = self.db_manager.get_month_stats()
+                title = "Son 30 Gün - En Çok Kullanılan Uygulamalar (Top 10)"
+            
+            if not stats:
+                label = ctk.CTkLabel(
+                    self.chart_canvas_frame,
+                    text="Grafik için yeterli veri yok",
+                    font=ctk.CTkFont(size=14),
+                    text_color="gray"
+                )
+                label.pack(pady=50)
+                return
+            
+            # Sort and take top 10
+            sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)[:10]
+            apps = [item[0] for item in sorted_stats]
+            durations = [item[1] / 3600 for item in sorted_stats]  # Convert to hours
+            
+            # Create figure
+            fig = Figure(figsize=(8, 5), dpi=100)
+            ax = fig.add_subplot(111)
+            
+            bars = ax.bar(range(len(apps)), durations, color='#1f538d')
+            ax.set_xlabel('Uygulama', fontsize=10, fontweight='bold')
+            ax.set_ylabel('Saat (hours)', fontsize=10, fontweight='bold')
+            ax.set_title(title, fontsize=12, fontweight='bold')
+            ax.set_xticks(range(len(apps)))
+            ax.set_xticklabels(apps, rotation=45, ha='right', fontsize=9)
+            ax.grid(axis='y', alpha=0.3)
+            
+            # Add value labels on bars
+            for i, (bar, duration) in enumerate(zip(bars, durations)):
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2., height,
+                       f'{duration:.1f}h',
+                       ha='center', va='bottom', fontsize=8)
+            
+            fig.tight_layout()
+            
+            # Embed in tkinter
+            canvas = FigureCanvasTkAgg(fig, master=self.chart_canvas_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill="both", expand=True)
+            
+        except Exception as e:
+            error_label = ctk.CTkLabel(
+                self.chart_canvas_frame,
+                text=f"Grafik oluşturma hatası: {str(e)}",
+                font=ctk.CTkFont(size=12),
+                text_color="#FF6B6B"
+            )
+            error_label.pack(pady=20)
+            print(f"[TimeTraceUI] Chart error: {e}")
+    
+    def _plot_daily_trend_chart(self):
+        """Plot daily usage trend over time."""
+        self.chart_type_var.set("trend")
+        
+        # Clear previous chart
+        for widget in self.chart_canvas_frame.winfo_children():
+            widget.destroy()
+        
+        try:
+            period = self.chart_period_var.get() if hasattr(self, 'chart_period_var') else "week"
+            
+            if period == "week":
+                days = 7
+                title = "Son 7 Gün - Günlük Toplam Kullanım"
+            else:
+                days = 30
+                title = "Son 30 Gün - Günlük Toplam Kullanım"
+            
+            # Get daily totals
+            daily_totals = []
+            daily_labels = []
+            today = datetime.now().date()
+            
+            for i in range(days - 1, -1, -1):
+                date = today - timedelta(days=i)
+                date_str = date.strftime("%Y-%m-%d")
+                
+                stats = self.db_manager.get_stats_for_date_range(date_str, date_str)
+                total_seconds = sum(stats.values()) if stats else 0
+                total_hours = total_seconds / 3600
+                
+                daily_totals.append(total_hours)
+                daily_labels.append(date.strftime("%m-%d"))
+            
+            if not any(daily_totals):
+                label = ctk.CTkLabel(
+                    self.chart_canvas_frame,
+                    text="Grafik için yeterli veri yok",
+                    font=ctk.CTkFont(size=14),
+                    text_color="gray"
+                )
+                label.pack(pady=50)
+                return
+            
+            # Create figure
+            fig = Figure(figsize=(8, 5), dpi=100)
+            ax = fig.add_subplot(111)
+            
+            ax.plot(range(len(daily_totals)), daily_totals, marker='o', 
+                   color='#1f538d', linewidth=2, markersize=6)
+            ax.fill_between(range(len(daily_totals)), daily_totals, alpha=0.3, color='#1f538d')
+            ax.set_xlabel('Tarih', fontsize=10, fontweight='bold')
+            ax.set_ylabel('Saat (hours)', fontsize=10, fontweight='bold')
+            ax.set_title(title, fontsize=12, fontweight='bold')
+            ax.set_xticks(range(0, len(daily_labels), max(1, len(daily_labels)//7)))
+            ax.set_xticklabels([daily_labels[i] for i in range(0, len(daily_labels), max(1, len(daily_labels)//7))], 
+                              rotation=45, ha='right', fontsize=9)
+            ax.grid(True, alpha=0.3)
+            
+            fig.tight_layout()
+            
+            # Embed in tkinter
+            canvas = FigureCanvasTkAgg(fig, master=self.chart_canvas_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill="both", expand=True)
+            
+        except Exception as e:
+            error_label = ctk.CTkLabel(
+                self.chart_canvas_frame,
+                text=f"Grafik oluşturma hatası: {str(e)}",
+                font=ctk.CTkFont(size=12),
+                text_color="#FF6B6B"
+            )
+            error_label.pack(pady=20)
+            print(f"[TimeTraceUI] Chart error: {e}")
+    
+    def _plot_category_chart(self):
+        """Plot category distribution pie chart."""
+        self.chart_type_var.set("category")
+        
+        # Clear previous chart
+        for widget in self.chart_canvas_frame.winfo_children():
+            widget.destroy()
+        
+        try:
+            period = self.chart_period_var.get() if hasattr(self, 'chart_period_var') else "week"
+            
+            if period == "week":
+                stats = self.db_manager.get_week_stats()
+                title = "Son 7 Gün - Kategori Dağılımı"
+            else:
+                stats = self.db_manager.get_month_stats()
+                title = "Son 30 Gün - Kategori Dağılımı"
+            
+            if not stats:
+                label = ctk.CTkLabel(
+                    self.chart_canvas_frame,
+                    text="Grafik için yeterli veri yok",
+                    font=ctk.CTkFont(size=14),
+                    text_color="gray"
+                )
+                label.pack(pady=50)
+                return
+            
+            # Categorize apps
+            category_totals = {}
+            for app_name, seconds in stats.items():
+                category = "📊 Diğer Uygulamalar"
+                for cat, apps in APP_CATEGORIES.items():
+                    if any(app_name.lower() == app.lower() for app in apps):
+                        category = cat
+                        break
+                
+                if category not in category_totals:
+                    category_totals[category] = 0
+                category_totals[category] += seconds
+            
+            # Convert to hours and sort
+            categories = list(category_totals.keys())
+            hours = [v / 3600 for v in category_totals.values()]
+            
+            # Create figure
+            fig = Figure(figsize=(8, 5), dpi=100)
+            ax = fig.add_subplot(111)
+            
+            colors = ['#1f538d', '#2e7db3', '#3d9dd9', '#4cbdff', '#5eceff', '#6edfff', '#7eefff']
+            wedges, texts, autotexts = ax.pie(hours, labels=categories, autopct='%1.1f%%',
+                                              colors=colors[:len(categories)], startangle=90)
+            ax.set_title(title, fontsize=12, fontweight='bold')
+            
+            # Format text
+            for text in texts:
+                text.set_fontsize(9)
+                text.set_fontweight('bold')
+            for autotext in autotexts:
+                autotext.set_color('white')
+                autotext.set_fontsize(8)
+                autotext.set_fontweight('bold')
+            
+            fig.tight_layout()
+            
+            # Embed in tkinter
+            canvas = FigureCanvasTkAgg(fig, master=self.chart_canvas_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill="both", expand=True)
+            
+        except Exception as e:
+            error_label = ctk.CTkLabel(
+                self.chart_canvas_frame,
+                text=f"Grafik oluşturma hatası: {str(e)}",
+                font=ctk.CTkFont(size=12),
+                text_color="#FF6B6B"
+            )
+            error_label.pack(pady=20)
+            print(f"[TimeTraceUI] Chart error: {e}")
     
     def _setup_settings_tab(self):
         """Setup the Watchlist/Settings tab."""
