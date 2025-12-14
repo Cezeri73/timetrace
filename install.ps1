@@ -18,6 +18,10 @@ Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $extractPath = Join-Path $target "timetrace"
 if (Test-Path $extractPath) { Remove-Item $extractPath -Recurse -Force }
+# Clean previous extracted repo folders like timetrace-*
+Get-ChildItem -Path $target -Directory | Where-Object { $_.Name -like "timetrace-*" } | ForEach-Object { 
+	try { Remove-Item $_.FullName -Recurse -Force } catch {}
+}
 [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $target)
 
 # Find extracted folder (it includes repo name-suffix)
