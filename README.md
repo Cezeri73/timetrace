@@ -7,8 +7,8 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
-[![Download Installer](https://img.shields.io/badge/Download-Installer-blue)](install.ps1)
-[![Download EXE](https://img.shields.io/badge/Download-EXE-darkgreen)](https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace-v1.0.0.zip)
+[![Download Setup](https://img.shields.io/badge/Download-Setup.exe-blue)](https://github.com/Cezeri73/timetrace/releases)
+[![Download Portable](https://img.shields.io/badge/Download-Portable.zip-darkgreen)](https://github.com/Cezeri73/timetrace/releases)
 
 **[English](#english)** | **[Türkçe](#turkish)**
 
@@ -23,52 +23,76 @@
 
 ### 📖 Overview
 
-**TimeTrace** is a modern, lightweight desktop application that helps you understand where your time goes. Track usage duration of specific applications you choose, visualize your daily statistics, and improve your productivity.
+**TimeTrace** is a modern, lightweight desktop application that helps you understand where your time goes. Track usage duration of specific applications you choose, visualize your daily statistics with charts, receive notifications, and improve your productivity.
 
 ### ✨ Features
 
 - 🎯 **Selective Tracking** - Choose exactly which applications to monitor
-- 📊 **Beautiful Dashboard** - View today's usage statistics at a glance
+- 📊 **Beautiful Dashboard** - View daily, weekly, and monthly statistics
+- 📈 **Interactive Charts** - Visualize usage with multiple chart types
+- 🔔 **Smart Notifications** - Get alerts when apps exceed time limits
+- 📅 **History & Date Filters** - Browse and search usage history
 - 🌙 **Modern Dark UI** - Sleek interface built with CustomTkinter
 - 💾 **Persistent Storage** - SQLite database keeps all your history
 - 🔔 **System Tray Support** - Minimize to tray and keep tracking in background
 - ⚡ **Low Resource Usage** - Efficient monitoring with minimal CPU impact
 - 🔍 **Running Apps Discovery** - See all running applications to easily add them
 - 🛡️ **Error Resilient** - Gracefully handles access denied and process errors
-- 🌐 **Bilingual Interface** - Turkish language support
+- 🌐 **Bilingual Interface** - English and Turkish language support
+- 📤 **CSV Export** - Export your usage data for analysis
+- ⚙️ **Advanced Settings** - Customize intervals, retention, startup behavior
 
 ### 🚀 Quick Start
 
-#### Prerequisites
-- **Python 3.10+**
-- **Windows OS**
+#### 📦 Installation Methods
 
-#### Installation (Quick)
+**Choose one of the following methods:**
 
-On Windows, you can use the one-click installer:
+##### 🎯 Method 1: Windows Installer (Recommended)
 
-1. Download `install.ps1` from the repository root or click the badge above.
-2. Right-click the file and select "Run with PowerShell".
-3. If you see a policy warning, run: `powershell -ExecutionPolicy Bypass -File install.ps1`.
-4. The installer downloads the latest code, creates a virtual environment, installs dependencies, and creates shortcuts.
-5. Launch from Desktop or Start Menu. The app runs without a console window.
+**One-click professional installation:**
 
-#### Installation (EXE)
+1. Download **[TimeTrace-Setup.exe](https://github.com/Cezeri73/timetrace/releases)** from the latest release
+2. Run the installer and follow the setup wizard
+3. Launch from Desktop shortcut or Start Menu
+4. That's it! No Python required, no console window
 
-Download the prebuilt EXE and double‑click (no Python required):
+**Features:**
+- ✅ Installs to Program Files
+- ✅ Creates Desktop & Start Menu shortcuts
+- ✅ Appears in Windows Add/Remove Programs
+- ✅ Professional uninstaller included
 
-1. Download ZIP: https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace-v1.0.0.zip
-2. Extract the ZIP file
-3. Double‑click `TimeTrace.exe` to run
+##### 💼 Method 2: Portable ZIP
 
-Or visit Releases: https://github.com/Cezeri73/timetrace/releases
+**No installation, just extract and run:**
 
-#### Installation (Manual)
+1. Download **[TimeTrace-v1.0.0.zip](https://github.com/Cezeri73/timetrace/releases)** from the latest release
+2. Extract the ZIP file to any folder
+3. Double-click `TimeTrace.exe` to run
+4. No Python required, portable version
+
+##### ⚡ Method 3: PowerShell Installer
+
+**For developers who prefer script installation:**
+
+1. Download `install.ps1` from the repository
+2. Run: `powershell -ExecutionPolicy Bypass -File install.ps1`
+3. The script creates a Python venv, installs dependencies, and creates shortcuts
+4. Launch from Desktop or Start Menu
+
+##### 🔧 Method 4: Manual Setup (For Development)
+
+**Clone and run from source:**
 
 ```bash
 # Clone the repository
 git clone https://github.com/Cezeri73/timetrace.git
 cd timetrace
+
+# Create virtual environment (recommended)
+python -m venv .venv
+.venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -76,6 +100,8 @@ pip install -r requirements.txt
 # Run the application (no console window)
 pythonw main.py
 ```
+
+**Or visit:** [Releases Page](https://github.com/Cezeri73/timetrace/releases) for all download options
 
 ### 📱 Usage
 
@@ -92,10 +118,24 @@ pythonw main.py
 
 3. **View Statistics**
    - Open **📊 Dashboard** tab
+   - Select period: Today, This Week, or This Month
    - Click **"🔄 Refresh Stats"** for latest data
-   - See time spent on each app today
 
-4. **System Tray**
+4. **Visualize with Charts**
+   - Go to **📈 Charts** tab
+   - View Top Apps, Daily Trend, Category Distribution, and Week Comparison
+
+5. **Set Notifications**
+   - Open **🔔 Notifications** tab
+   - Set time thresholds for each tracked app
+   - Configure quiet hours and snooze duration
+
+6. **Browse History**
+   - Navigate to **📅 History** tab
+   - Use date range filters or presets (Today, Last 7 Days, Last 30 Days)
+   - Search and review past usage
+
+7. **System Tray**
    - Closing the window minimizes to system tray
    - Right-click tray icon to show/hide or exit
    - App continues tracking in background
@@ -109,9 +149,13 @@ TimeTrace/
 ├── database_manager.py     # SQLite database operations
 ├── config_manager.py       # JSON configuration management
 ├── monitor_service.py      # Background monitoring service
-├── requirements.txt        # Python dependencies
-├── tracker.db             # SQLite database (auto-created)
-└── settings.json          # Configuration file (auto-created)
+├── notification_service.py # Notification handling service
+├── build.ps1              # Build script for creating EXE
+├── install.ps1            # PowerShell installation script
+├── installer.nsi          # NSIS installer configuration
+├── requirements.txt       # Python dependencies
+├── tracker.db            # SQLite database (auto-created)
+└── settings.json         # Configuration file (auto-created)
 ```
 
 ### 🔧 Configuration
@@ -124,7 +168,10 @@ The `settings.json` file stores your preferences:
     "check_interval_seconds": 5,
     "save_interval_seconds": 60,
     "theme": "dark",
-    "minimize_to_tray": true
+    "minimize_to_tray": true,
+    "run_at_startup": false,
+    "export_directory": "C:\\Users\\YourName\\Documents\\TimeTrace_Exports",
+    "export_range": "today"
 }
 ```
 
@@ -145,6 +192,10 @@ The `settings.json` file stores your preferences:
 - **SQLite3** - Local database
 - **pystray** - System tray integration
 - **Pillow** - Icon generation
+- **matplotlib** - Chart visualization
+- **win10toast** - Desktop notifications
+- **PyInstaller** - EXE packaging
+- **NSIS** - Professional Windows installer
 
 ### 🤝 Contributing
 
@@ -155,6 +206,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+For more details, see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### 📝 License
 
@@ -179,63 +232,85 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### 📖 Genel Bakış
 
-**TimeTrace**, zamanınızın nereye gittiğini anlamanıza yardımcı olan modern, hafif bir masaüstü uygulamasıdır. Seçtiğiniz uygulamaların kullanım süresini takip edin, günlük istatistiklerinizi görselleştirin ve verimliliğinizi artırın.
+**TimeTrace**, zamanınızın nereye gittiğini anlamanıza yardımcı olan modern, hafif bir masaüstü uygulamasıdır. Seçtiğiniz uygulamaların kullanım süresini takip edin, grafiklerle görselleştirin, bildirimler alın ve verimliliğinizi artırın.
 
 ### ✨ Özellikler
 
 - 🎯 **Seçici İzleme** - Tam olarak hangi uygulamaları izleyeceğinizi seçin
-- 📊 **Güzel Dashboard** - Bugünün kullanım istatistiklerini bir bakışta görün
+- 📊 **Güzel Dashboard** - Günlük, haftalık ve aylık istatistikleri görün
+- 📈 **İnteraktif Grafikler** - Kullanımı birden fazla grafik türüyle görselleştirin
+- 🔔 **Akıllı Bildirimler** - Uygulamalar zaman limitini aştığında uyarı alın
+- 📅 **Geçmiş & Tarih Filtreleri** - Kullanım geçmişini tarayın ve arayın
 - 🌙 **Modern Karanlık Tema** - CustomTkinter ile yapılmış şık arayüz
 - 💾 **Kalıcı Depolama** - SQLite veritabanı tüm geçmişinizi saklar
 - 🔔 **Sistem Tepsisi Desteği** - Tepsiye küçült ve arka planda takip et
 - ⚡ **Düşük Kaynak Kullanımı** - Minimum CPU etkisi ile verimli izleme
 - 🔍 **Çalışan Uygulamaları Keşfet** - Kolayca eklemek için tüm çalışan uygulamaları gör
 - 🛡️ **Hata Dayanıklılığı** - Erişim reddedildi ve işlem hatalarını zarif bir şekilde yönetir
-- 🌐 **İki Dilli Arayüz** - Türkçe dil desteği
+- 🌐 **İki Dilli Arayüz** - İngilizce ve Türkçe dil desteği
+- 📤 **CSV Dışa Aktarım** - Analiz için kullanım verilerinizi dışa aktarın
+- ⚙️ **Gelişmiş Ayarlar** - Aralıkları, saklama süresini, başlangıç davranışını özelleştirin
 
 ### 🚀 Hızlı Başlangıç
 
-#### Gereksinimler
-- **Python 3.10+**
-- **Windows OS**
+#### 📦 Kurulum Yöntemleri
 
-#### Kurulum (Hızlı)
+**Aşağıdaki yöntemlerden birini seçin:**
 
-Windows için tek tıkla kurulum kullanabilirsiniz:
+##### 🎯 Yöntem 1: Windows Kurulum Sihirbazı (Önerilen)
 
-1. Depo kök klasöründen `install.ps1` dosyasını indirin veya yukarıdaki rozetten tıklayın.
-#### EXE Kurulum (Hızlı)
+**Tek tıkla profesyonel kurulum:**
 
-Önceden derlenmiş EXE’yi indirip çift tıklayın (Python gerekmez):
+1. En son sürümden **[TimeTrace-Setup.exe](https://github.com/Cezeri73/timetrace/releases)** indirin
+2. Kurulum dosyasını çalıştırın ve kurulum sihirbazını takip edin
+3. Masaüstü kısayolu veya Başlat Menüsü'nden başlatın
+4. Hepsi bu kadar! Python gerekmez, konsol penceresi yok
 
-1. ZIP indir: https://github.com/Cezeri73/timetrace/releases/latest/download/TimeTrace-v1.0.0.zip
-2. ZIP dosyasını çıkart
+**Özellikler:**
+- ✅ Program Files'a kurulum
+- ✅ Masaüstü & Başlat Menüsü kısayolları
+- ✅ Windows Programlar ve Özellikler'de görünür
+- ✅ Profesyonel kaldırma programı dahil
+
+##### 💼 Yöntem 2: Taşınabilir ZIP
+
+**Kurulum yok, sadece çıkart ve çalıştır:**
+
+1. En son sürümden **[TimeTrace-v1.0.0.zip](https://github.com/Cezeri73/timetrace/releases)** indirin
+2. ZIP dosyasını istediğiniz klasöre çıkartın
 3. `TimeTrace.exe` dosyasına çift tıklayın
+4. Python gerekmez, taşınabilir sürüm
 
-Alternatif: GitHub Releases sayfası: https://github.com/Cezeri73/timetrace/releases
-2. Dosyaya sağ tıklayın ve "PowerShell ile Çalıştır" seçin.
-3. Politika uyarısı görürseniz: `powershell -ExecutionPolicy Bypass -File install.ps1` komutunu çalıştırın.
-4. En son kodu indirir, sanal ortam oluşturur, bağımlılıkları kurar ve kısayolları ekler.
-5. Masaüstü veya Başlat Menüsü kısayolundan başlatın. Uygulama konsol penceresi olmadan çalışır.
+##### ⚡ Yöntem 3: PowerShell Kurulum Scripti
 
-#### Kurulum (Manuel)
+**Geliştiriciler için script kurulumu:**
+
+1. Depodan `install.ps1` dosyasını indirin
+2. Çalıştırın: `powershell -ExecutionPolicy Bypass -File install.ps1`
+3. Script Python venv oluşturur, bağımlılıkları kurar ve kısayollar ekler
+4. Masaüstü veya Başlat Menüsü'nden başlatın
+
+##### 🔧 Yöntem 4: Manuel Kurulum (Geliştirme İçin)
+
+**Kaynak koddan çalıştırın:**
 
 ```bash
 # Depoyu klonlayın
 git clone https://github.com/Cezeri73/timetrace.git
-### 📤 Dışa Aktarım
-
-**🔧 Gelişmiş Ayarlar** sekmesinden CSV dışa aktarımı yapabilirsiniz.
-Uygulama dışa aktarımdan sonra dosyanın tam yolunu gösterir ve **Klasörü Aç** butonu sunar.
-Ayrıca dışa aktarılan klasörü ve aralığı (Bugün / 7 Gün / 30 Gün) ayarlayabilirsiniz.
 cd timetrace
+
+# Sanal ortam oluşturun (önerilen)
+python -m venv .venv
+.venv\Scripts\activate
 
 # Bağımlılıkları kurun
 pip install -r requirements.txt
 
-# Uygulamayı çalıştırın
-python main.py
+# Uygulamayı çalıştırın (konsol penceresi olmadan)
+pythonw main.py
 ```
+
+**Veya ziyaret edin:** [Releases Sayfası](https://github.com/Cezeri73/timetrace/releases) tüm indirme seçenekleri için
 
 ### 📱 Kullanım
 
@@ -252,10 +327,24 @@ python main.py
 
 3. **İstatistikleri Görüntüleyin**
    - **📊 Dashboard** sekmesini açın
+   - Dönem seçin: Bugün, Bu Hafta veya Bu Ay
    - En son veriler için **"🔄 İstatistikleri Yenile"** butonuna tıklayın
-   - Bugün her uygulamada harcanan süreyi görün
 
-4. **Sistem Tepsisi**
+4. **Grafiklerle Görselleştirin**
+   - **📈 Grafikler** sekmesine gidin
+   - En Çok Kullanılan, Günlük Trend, Kategori Dağılımı ve Hafta Karşılaştırma grafiklerini görün
+
+5. **Bildirimler Ayarlayın**
+   - **🔔 Bildirimler** sekmesini açın
+   - Her izlenen uygulama için zaman eşikleri belirleyin
+   - Sessiz saatleri ve erteleme süresini yapılandırın
+
+6. **Geçmişi İnceleyin**
+   - **📅 Geçmiş** sekmesine gidin
+   - Tarih aralığı filtreleri veya önayarları kullanın (Bugün, Son 7 Gün, Son 30 Gün)
+   - Geçmiş kullanımı arayın ve inceleyin
+
+7. **Sistem Tepsisi**
    - Pencereyi kapatmak sistem tepsisine küçültür
    - Göster/gizle veya çık için tepsi ikonuna sağ tıklayın
    - Uygulama arka planda izlemeye devam eder
@@ -269,9 +358,13 @@ TimeTrace/
 ├── database_manager.py     # SQLite veritabanı işlemleri
 ├── config_manager.py       # JSON yapılandırma yönetimi
 ├── monitor_service.py      # Arka plan izleme servisi
-├── requirements.txt        # Python bağımlılıkları
-├── tracker.db             # SQLite veritabanı (otomatik oluşturulur)
-└── settings.json          # Yapılandırma dosyası (otomatik oluşturulur)
+├── notification_service.py # Bildirim yönetimi servisi
+├── build.ps1              # EXE oluşturma scripti
+├── install.ps1            # PowerShell kurulum scripti
+├── installer.nsi          # NSIS kurulum yapılandırması
+├── requirements.txt       # Python bağımlılıkları
+├── tracker.db            # SQLite veritabanı (otomatik oluşturulur)
+└── settings.json         # Yapılandırma dosyası (otomatik oluşturulur)
 ```
 
 ### 🔧 Yapılandırma
@@ -284,7 +377,10 @@ TimeTrace/
     "check_interval_seconds": 5,
     "save_interval_seconds": 60,
     "theme": "dark",
-    "minimize_to_tray": true
+    "minimize_to_tray": true,
+    "run_at_startup": false,
+    "export_directory": "C:\\Users\\KullaniciAdi\\Documents\\TimeTrace_Exports",
+    "export_range": "today"
 }
 ```
 
@@ -305,6 +401,10 @@ TimeTrace/
 - **SQLite3** - Yerel veritabanı
 - **pystray** - Sistem tepsisi entegrasyonu
 - **Pillow** - İkon oluşturma
+- **matplotlib** - Grafik görselleştirme
+- **win10toast** - Masaüstü bildirimleri
+- **PyInstaller** - EXE paketleme
+- **NSIS** - Profesyonel Windows kurulum
 
 ### 🤝 Katkıda Bulunma
 
@@ -315,6 +415,8 @@ Katkılar memnuniyetle karşılanır! Lütfen bir Pull Request göndermekten çe
 3. Değişikliklerinizi commit edin (`git commit -m 'Harika bir özellik ekle'`)
 4. Dalınıza push edin (`git push origin feature/HarikaBirOzellik`)
 5. Bir Pull Request açın
+
+Daha fazla detay için [CONTRIBUTING.md](CONTRIBUTING.md) dosyasına bakın.
 
 ### 📝 Lisans
 
@@ -329,8 +431,8 @@ Bu proje MIT Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LIC
 
 ### 📧 İletişim & Destek
 
-- **Sorunlar:** [GitHub Issues](https://github.com/yourusername/timetrace/issues)
-- **Tartışmalar:** [GitHub Discussions](https://github.com/yourusername/timetrace/discussions)
+- **Sorunlar:** [GitHub Issues](https://github.com/Cezeri73/timetrace/issues)
+- **Tartışmalar:** [GitHub Discussions](https://github.com/Cezeri73/timetrace/discussions)
 
 ---
 
