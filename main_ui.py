@@ -1620,6 +1620,49 @@ class TimeTraceUI:
             width=150
         )
         save_btn.pack(side="left", padx=5)
+
+        # Notifications settings (Quiet Hours & Snooze)
+        notif_frame = ctk.CTkFrame(settings_frame)
+        notif_frame.pack(fill="x", padx=10, pady=10)
+
+        notif_label = ctk.CTkLabel(
+            notif_frame,
+            text="🔔 Bildirim Ayarları",
+            font=ctk.CTkFont(size=14, weight="bold")
+        )
+        notif_label.pack(anchor="w", padx=10)
+
+        qh_frame = ctk.CTkFrame(notif_frame)
+        qh_frame.pack(fill="x", padx=10, pady=5)
+
+        qh_label = ctk.CTkLabel(
+            qh_frame,
+            text="Sessiz Saatler (HH:MM)",
+            font=ctk.CTkFont(size=12, weight="bold")
+        )
+        qh_label.pack(side="left", padx=10)
+
+        self.qh_start_var = ctk.StringVar(value=self.config_manager.get_setting("quiet_hours_start") or "22:00")
+        self.qh_end_var = ctk.StringVar(value=self.config_manager.get_setting("quiet_hours_end") or "07:00")
+
+        qh_start_entry = ctk.CTkEntry(qh_frame, textvariable=self.qh_start_var, width=80)
+        qh_start_entry.pack(side="left", padx=5)
+        qh_end_entry = ctk.CTkEntry(qh_frame, textvariable=self.qh_end_var, width=80)
+        qh_end_entry.pack(side="left", padx=5)
+
+        snooze_frame = ctk.CTkFrame(notif_frame)
+        snooze_frame.pack(fill="x", padx=10, pady=5)
+
+        snooze_label = ctk.CTkLabel(
+            snooze_frame,
+            text="Snooze (dakika)",
+            font=ctk.CTkFont(size=12, weight="bold")
+        )
+        snooze_label.pack(side="left", padx=10)
+
+        self.snooze_var = ctk.StringVar(value=str(self.config_manager.get_setting("notification_snooze_minutes") or 0))
+        snooze_entry = ctk.CTkEntry(snooze_frame, textvariable=self.snooze_var, width=80)
+        snooze_entry.pack(side="left", padx=5)
     
     def _save_advanced_settings(self):
         """Save advanced settings."""
@@ -1634,6 +1677,11 @@ class TimeTraceUI:
             self.config_manager.set_setting("check_interval_seconds", check_interval)
             self.config_manager.set_setting("save_interval_seconds", save_interval)
             self.config_manager.set_setting("minimize_to_tray", self.minimize_to_tray_var.get())
+
+            # Save notifications settings
+            self.config_manager.set_setting("quiet_hours_start", self.qh_start_var.get())
+            self.config_manager.set_setting("quiet_hours_end", self.qh_end_var.get())
+            self.config_manager.set_setting("notification_snooze_minutes", int(self.snooze_var.get()))
             
             print("[TimeTraceUI] Advanced settings saved")
             
@@ -1655,6 +1703,9 @@ class TimeTraceUI:
         self.check_interval_var.set("5")
         self.save_interval_var.set("60")
         self.minimize_to_tray_var.set(True)
+        self.qh_start_var.set("22:00")
+        self.qh_end_var.set("07:00")
+        self.snooze_var.set("0")
         print("[TimeTraceUI] Advanced settings reset to defaults")
     
     def _clear_old_data(self):
