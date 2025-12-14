@@ -11,6 +11,9 @@ psutil>=5.9.0
 pystray>=0.19.0
 Pillow>=10.0.0
 
+# Data visualization
+matplotlib>=3.5.0
+
 # Standard library modules (included with Python 3.10+):
 # - sqlite3
 # - json

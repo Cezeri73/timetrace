@@ -112,6 +112,115 @@ class DatabaseManager:
         today = datetime.now().strftime("%Y-%m-%d")
         return self.get_stats_for_date(today)
     
+    def get_week_stats(self) -> Dict[str, int]:
+        """
+        Get usage statistics for the past 7 days.
+        
+        Returns:
+            Dictionary mapping app_name to total duration_seconds
+        """
+        from datetime import timedelta
+        
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Get dates for last 7 days
+            end_date = datetime.now().strftime("%Y-%m-%d")
+            start_date = (datetime.now() - timedelta(days=6)).strftime("%Y-%m-%d")
+            
+            cursor.execute('''
+                SELECT app_name, SUM(duration_seconds) as total
+                FROM usage_logs 
+                WHERE date >= ? AND date <= ?
+                GROUP BY app_name
+                ORDER BY total DESC
+            ''', (start_date, end_date))
+            
+            results = cursor.fetchall()
+            conn.close()
+            
+            stats = {row[0]: row[1] for row in results}
+            return stats
+            
+        except sqlite3.Error as e:
+            print(f"[DatabaseManager] Error getting week stats: {e}")
+            if conn:
+                conn.close()
+            return {}
+    
+    def get_month_stats(self) -> Dict[str, int]:
+        """
+        Get usage statistics for the past 30 days.
+        
+        Returns:
+            Dictionary mapping app_name to total duration_seconds
+        """
+        from datetime import timedelta
+        
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Get dates for last 30 days
+            end_date = datetime.now().strftime("%Y-%m-%d")
+            start_date = (datetime.now() - timedelta(days=29)).strftime("%Y-%m-%d")
+            
+            cursor.execute('''
+                SELECT app_name, SUM(duration_seconds) as total
+                FROM usage_logs 
+                WHERE date >= ? AND date <= ?
+                GROUP BY app_name
+                ORDER BY total DESC
+            ''', (start_date, end_date))
+            
+            results = cursor.fetchall()
+            conn.close()
+            
+            stats = {row[0]: row[1] for row in results}
+            return stats
+            
+        except sqlite3.Error as e:
+            print(f"[DatabaseManager] Error getting month stats: {e}")
+            if conn:
+                conn.close()
+            return {}
+    
+    def get_stats_for_date_range(self, start_date: str, end_date: str) -> Dict[str, int]:
+        """
+        Get usage statistics for a custom date range.
+        
+        Args:
+            start_date: Start date in YYYY-MM-DD format
+            end_date: End date in YYYY-MM-DD format
+            
+        Returns:
+            Dictionary mapping app_name to total duration_seconds
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT app_name, SUM(duration_seconds) as total
+                FROM usage_logs 
+                WHERE date >= ? AND date <= ?
+                GROUP BY app_name
+                ORDER BY total DESC
+            ''', (start_date, end_date))
+            
+            results = cursor.fetchall()
+            conn.close()
+            
+            stats = {row[0]: row[1] for row in results}
+            return stats
+            
+        except sqlite3.Error as e:
+            print(f"[DatabaseManager] Error getting date range stats: {e}")
+            if conn:
+                conn.close()
+            return {}
+    
     def get_stats_for_date(self, date: str) -> Dict[str, int]:
         """
         Get usage statistics for a specific date.

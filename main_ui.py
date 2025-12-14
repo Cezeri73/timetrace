@@ -111,10 +111,47 @@ class TimeTraceUI:
         # Title
         title_label = ctk.CTkLabel(
             self.tab_dashboard,
-            text="Bugünkü Uygulama Kullanımı",
+            text="Uygulama Kullanım İstatistikleri",
             font=ctk.CTkFont(size=24, weight="bold")
         )
         title_label.pack(pady=20)
+        
+        # Time period selector
+        period_frame = ctk.CTkFrame(self.tab_dashboard)
+        period_frame.pack(pady=10)
+        
+        period_label = ctk.CTkLabel(
+            period_frame,
+            text="Dönem Seç:",
+            font=ctk.CTkFont(size=12, weight="bold")
+        )
+        period_label.pack(side="left", padx=10)
+        
+        self.period_var = ctk.StringVar(value="today")
+        
+        today_btn = ctk.CTkButton(
+            period_frame,
+            text="📅 Bugün",
+            command=lambda: self._set_period("today"),
+            width=80
+        )
+        today_btn.pack(side="left", padx=5)
+        
+        week_btn = ctk.CTkButton(
+            period_frame,
+            text="📊 Hafta",
+            command=lambda: self._set_period("week"),
+            width=80
+        )
+        week_btn.pack(side="left", padx=5)
+        
+        month_btn = ctk.CTkButton(
+            period_frame,
+            text="📈 Ay",
+            command=lambda: self._set_period("month"),
+            width=80
+        )
+        month_btn.pack(side="left", padx=5)
         
         # Refresh button
         refresh_btn = ctk.CTkButton(
@@ -135,6 +172,16 @@ class TimeTraceUI:
         self.stats_frame.pack(fill="both", expand=True, padx=20, pady=10)
         
         # Initial load of stats
+        self._refresh_dashboard()
+    
+    def _set_period(self, period: str):
+        """
+        Set statistics period and refresh.
+        
+        Args:
+            period: "today", "week", or "month"
+        """
+        self.period_var.set(period)
         self._refresh_dashboard()
     
     def _setup_settings_tab(self):
@@ -272,7 +319,7 @@ class TimeTraceUI:
         self._refresh_running_apps()
     
     def _refresh_dashboard(self):
-        """Refresh the dashboard with latest statistics."""
+        """Refresh the dashboard with latest statistics based on selected period."""
         # Force save any pending time
         self.monitor.force_save()
         
@@ -280,24 +327,84 @@ class TimeTraceUI:
         for widget in self.stats_frame.winfo_children():
             widget.destroy()
         
-        # Get today's stats
-        stats = self.db_manager.get_today_stats()
+        period = self.period_var.get() if hasattr(self, 'period_var') else "today"
         
-        if not stats:
-            no_data_label = ctk.CTkLabel(
+        try:
+            # Get stats based on period
+            if period == "today":
+                stats = self.db_manager.get_today_stats()
+                period_text = "Bugün"
+            elif period == "week":
+                stats = self.db_manager.get_week_stats()
+                period_text = "Son 7 Gün"
+            elif period == "month":
+                stats = self.db_manager.get_month_stats()
+                period_text = "Son 30 Gün"
+            else:
+                stats = self.db_manager.get_today_stats()
+                period_text = "Bugün"
+            
+            # Period header
+            period_header = ctk.CTkLabel(
                 self.stats_frame,
-                text="Bugün için henüz veri yok.\n'⚙️ Watchlist' sekmesinden uygulama ekleyin ve kullanmaya başlayın!",
-                font=ctk.CTkFont(size=14),
-                text_color="gray"
+                text=f"{period_text} İstatistikleri",
+                font=ctk.CTkFont(size=16, weight="bold"),
+                text_color="#FFD700"
             )
-            no_data_label.pack(pady=50)
-            return
-        
-        # Display each app's usage
-        for app_name, duration_seconds in stats.items():
-            self._create_app_stat_widget(app_name, duration_seconds)
-        
-        print("[TimeTraceUI] Dashboard refreshed")
+            period_header.pack(anchor="w", padx=10, pady=(10, 5))
+            
+            if not stats:
+                no_data_label = ctk.CTkLabel(
+                    self.stats_frame,
+                    text=f"{period_text} için henüz veri yok.\n'⚙️ Watchlist' sekmesinden uygulama ekleyin ve kullanmaya başlayın!",
+                    font=ctk.CTkFont(size=14),
+                    text_color="gray"
+                )
+                no_data_label.pack(pady=50)
+                return
+            
+            # Calculate total time
+            total_seconds = sum(stats.values())
+            
+            # Total time display
+            total_hours = total_seconds // 3600
+            total_minutes = (total_seconds % 3600) // 60
+            total_secs = total_seconds % 60
+            
+            total_label = ctk.CTkLabel(
+                self.stats_frame,
+                text=f"Toplam: {total_hours}s {total_minutes}d {total_secs}sn",
+                font=ctk.CTkFont(size=13, weight="bold"),
+                text_color="#00FF00"
+            )
+            total_label.pack(anchor="w", padx=20, pady=5)
+            
+            # Separator
+            separator = ctk.CTkLabel(
+                self.stats_frame,
+                text="─" * 60,
+                text_color="#444444"
+            )
+            separator.pack(pady=5)
+            
+            # Sort stats by duration (descending)
+            sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
+            
+            # Display each app
+            for app_name, duration_seconds in sorted_stats:
+                self._create_app_stat_widget(app_name, duration_seconds)
+            
+            print(f"[TimeTraceUI] Dashboard refreshed ({period_text})")
+            
+        except Exception as e:
+            error_label = ctk.CTkLabel(
+                self.stats_frame,
+                text=f"Hata: {str(e)}",
+                font=ctk.CTkFont(size=12),
+                text_color="#FF6B6B"
+            )
+            error_label.pack(pady=20)
+            print(f"[TimeTraceUI] Dashboard error: {e}")
     
     def _create_app_stat_widget(self, app_name: str, duration_seconds: int):
         """
