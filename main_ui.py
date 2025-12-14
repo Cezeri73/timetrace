@@ -1879,7 +1879,7 @@ if __name__ == "__main__":
     monitor.start()
     
     # Create and run UI
-    ui = TimeAuditUI(db, config, monitor)
+    ui = TimeTraceUI(db, config, monitor)
     ui.run()
     
     # Cleanup
