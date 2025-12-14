@@ -107,6 +107,7 @@ class TimeTraceUI:
         self.tab_dashboard = self.tabview.add("📊 Dashboard")
         self.tab_charts = self.tabview.add("📈 Grafikler")
         self.tab_notifications = self.tabview.add("🔔 Bildirimler")
+        self.tab_history = self.tabview.add("📅 Geçmiş")
         self.tab_settings = self.tabview.add("⚙️ Watchlist")
         self.tab_help = self.tabview.add("❓ Nasıl Kullanılır")
         
@@ -114,6 +115,7 @@ class TimeTraceUI:
         self._setup_dashboard_tab()
         self._setup_charts_tab()
         self._setup_notifications_tab()
+        self._setup_history_tab()
         self._setup_settings_tab()
         self._setup_help_tab()
     
@@ -665,6 +667,255 @@ class TimeTraceUI:
         self._load_notification_thresholds()
         
         print("[TimeTraceUI] Notification thresholds reset to defaults")
+    
+    def _setup_history_tab(self):
+        """Setup the History tab with date filtering."""
+        # Title
+        title_label = ctk.CTkLabel(
+            self.tab_history,
+            text="Geçmiş İstatistikler",
+            font=ctk.CTkFont(size=24, weight="bold")
+        )
+        title_label.pack(pady=20)
+        
+        # Date range selection frame
+        date_frame = ctk.CTkFrame(self.tab_history)
+        date_frame.pack(pady=15, padx=20, fill="x")
+        
+        # Start date
+        start_label = ctk.CTkLabel(
+            date_frame,
+            text="Başlangıç Tarihi (YYYY-MM-DD):",
+            font=ctk.CTkFont(size=11, weight="bold")
+        )
+        start_label.pack(side="left", padx=10)
+        
+        self.history_start_entry = ctk.CTkEntry(
+            date_frame,
+            placeholder_text="2024-01-01",
+            width=120
+        )
+        self.history_start_entry.pack(side="left", padx=5)
+        
+        # End date
+        end_label = ctk.CTkLabel(
+            date_frame,
+            text="Bitiş Tarihi (YYYY-MM-DD):",
+            font=ctk.CTkFont(size=11, weight="bold")
+        )
+        end_label.pack(side="left", padx=10)
+        
+        self.history_end_entry = ctk.CTkEntry(
+            date_frame,
+            placeholder_text="2024-01-31",
+            width=120
+        )
+        self.history_end_entry.pack(side="left", padx=5)
+        
+        # Refresh button
+        refresh_btn = ctk.CTkButton(
+            date_frame,
+            text="🔍 Ara",
+            command=self._search_history,
+            width=80
+        )
+        refresh_btn.pack(side="left", padx=5)
+        
+        # Quick presets
+        preset_frame = ctk.CTkFrame(self.tab_history)
+        preset_frame.pack(pady=10, padx=20, fill="x")
+        
+        preset_label = ctk.CTkLabel(
+            preset_frame,
+            text="Hızlı Seçimler:",
+            font=ctk.CTkFont(size=11, weight="bold")
+        )
+        preset_label.pack(side="left", padx=10)
+        
+        today_btn = ctk.CTkButton(
+            preset_frame,
+            text="Bugün",
+            command=lambda: self._set_history_range("today"),
+            width=70
+        )
+        today_btn.pack(side="left", padx=3)
+        
+        week_btn = ctk.CTkButton(
+            preset_frame,
+            text="Geçen Hafta",
+            command=lambda: self._set_history_range("week"),
+            width=70
+        )
+        week_btn.pack(side="left", padx=3)
+        
+        month_btn = ctk.CTkButton(
+            preset_frame,
+            text="Geçen Ay",
+            command=lambda: self._set_history_range("month"),
+            width=70
+        )
+        month_btn.pack(side="left", padx=3)
+        
+        all_btn = ctk.CTkButton(
+            preset_frame,
+            text="Tümü",
+            command=lambda: self._set_history_range("all"),
+            width=70
+        )
+        all_btn.pack(side="left", padx=3)
+        
+        # Results frame
+        self.history_results_frame = ctk.CTkScrollableFrame(
+            self.tab_history,
+            width=700,
+            height=400
+        )
+        self.history_results_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # Initial load
+        self._search_history()
+    
+    def _set_history_range(self, range_type: str):
+        """Set history date range using presets."""
+        from datetime import datetime, timedelta
+        
+        today = datetime.now().date()
+        
+        if range_type == "today":
+            start = today
+            end = today
+        elif range_type == "week":
+            start = today - timedelta(days=7)
+            end = today
+        elif range_type == "month":
+            start = today - timedelta(days=30)
+            end = today
+        else:  # all
+            start = today - timedelta(days=365)
+            end = today
+        
+        self.history_start_entry.delete(0, "end")
+        self.history_start_entry.insert(0, start.strftime("%Y-%m-%d"))
+        
+        self.history_end_entry.delete(0, "end")
+        self.history_end_entry.insert(0, end.strftime("%Y-%m-%d"))
+        
+        self._search_history()
+    
+    def _search_history(self):
+        """Search and display history for the specified date range."""
+        # Clear results
+        for widget in self.history_results_frame.winfo_children():
+            widget.destroy()
+        
+        try:
+            start_str = self.history_start_entry.get().strip()
+            end_str = self.history_end_entry.get().strip()
+            
+            if not start_str or not end_str:
+                label = ctk.CTkLabel(
+                    self.history_results_frame,
+                    text="Lütfen başlangıç ve bitiş tarihlerini girin",
+                    font=ctk.CTkFont(size=12),
+                    text_color="gray"
+                )
+                label.pack(pady=50)
+                return
+            
+            # Get stats for date range
+            stats = self.db_manager.get_stats_for_date_range(start_str, end_str)
+            
+            if not stats:
+                label = ctk.CTkLabel(
+                    self.history_results_frame,
+                    text=f"{start_str} ile {end_str} arasında veri bulunamadı",
+                    font=ctk.CTkFont(size=12),
+                    text_color="gray"
+                )
+                label.pack(pady=50)
+                return
+            
+            # Header
+            header = ctk.CTkLabel(
+                self.history_results_frame,
+                text=f"{start_str} ile {end_str} Arasındaki İstatistikler",
+                font=ctk.CTkFont(size=14, weight="bold"),
+                text_color="#FFD700"
+            )
+            header.pack(anchor="w", padx=10, pady=10)
+            
+            # Total time
+            total_seconds = sum(stats.values())
+            total_hours = total_seconds // 3600
+            total_minutes = (total_seconds % 3600) // 60
+            
+            total_label = ctk.CTkLabel(
+                self.history_results_frame,
+                text=f"Toplam Kullanım: {total_hours}s {total_minutes}d",
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color="#00FF00"
+            )
+            total_label.pack(anchor="w", padx=20, pady=5)
+            
+            # Separator
+            separator = ctk.CTkLabel(
+                self.history_results_frame,
+                text="─" * 60,
+                text_color="#444444"
+            )
+            separator.pack(pady=5)
+            
+            # Apps list
+            sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
+            
+            for app_name, duration_seconds in sorted_stats:
+                hours = duration_seconds // 3600
+                minutes = (duration_seconds % 3600) // 60
+                secs = duration_seconds % 60
+                
+                if hours > 0:
+                    time_str = f"{hours}s {minutes}d {secs}sn"
+                elif minutes > 0:
+                    time_str = f"{minutes}d {secs}sn"
+                else:
+                    time_str = f"{secs}sn"
+                
+                app_frame = ctk.CTkFrame(self.history_results_frame)
+                app_frame.pack(fill="x", padx=10, pady=5)
+                
+                name_label = ctk.CTkLabel(
+                    app_frame,
+                    text=app_name,
+                    font=ctk.CTkFont(size=11, weight="bold"),
+                    anchor="w"
+                )
+                name_label.pack(side="left", padx=15, pady=10)
+                
+                time_label = ctk.CTkLabel(
+                    app_frame,
+                    text=time_str,
+                    font=ctk.CTkFont(size=11),
+                    text_color="#87CEEB"
+                )
+                time_label.pack(side="right", padx=20, pady=10)
+            
+        except ValueError as e:
+            error_label = ctk.CTkLabel(
+                self.history_results_frame,
+                text=f"Tarih formatı hata: {str(e)}\nLütfen YYYY-MM-DD formatını kullanın",
+                font=ctk.CTkFont(size=11),
+                text_color="#FF6B6B"
+            )
+            error_label.pack(pady=20)
+        except Exception as e:
+            error_label = ctk.CTkLabel(
+                self.history_results_frame,
+                text=f"Hata: {str(e)}",
+                font=ctk.CTkFont(size=11),
+                text_color="#FF6B6B"
+            )
+            error_label.pack(pady=20)
+            print(f"[TimeTraceUI] History search error: {e}")
     
     def _setup_settings_tab(self):
         """Setup the Watchlist/Settings tab."""
