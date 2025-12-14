@@ -13,6 +13,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from datetime import datetime, timedelta
 import psutil
+import os
+import sys
 
 
 # Uygulama Kategorileri
@@ -1491,6 +1493,38 @@ class TimeTraceUI:
             text_color="gray"
         )
         tray_info.pack(side="left", padx=10)
+
+        # Run at Startup Setting
+        startup_frame = ctk.CTkFrame(settings_frame)
+        startup_frame.pack(fill="x", padx=10, pady=15)
+
+        startup_label = ctk.CTkLabel(
+            startup_frame,
+            text="🚀 Windows Açılışında Çalıştır:",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            anchor="w"
+        )
+        startup_label.pack(side="left", padx=10)
+
+        current_startup = self.config_manager.get_setting("run_at_startup")
+        self.run_at_startup_var = ctk.BooleanVar(value=current_startup if current_startup is not None else False)
+
+        startup_switch = ctk.CTkSwitch(
+            startup_frame,
+            text="Aktif",
+            variable=self.run_at_startup_var,
+            onvalue=True,
+            offvalue=False
+        )
+        startup_switch.pack(side="left", padx=10)
+
+        startup_info = ctk.CTkLabel(
+            startup_frame,
+            text="Başlangıç klasörüne kısayol ekler/kaldırır",
+            font=ctk.CTkFont(size=9),
+            text_color="gray"
+        )
+        startup_info.pack(side="left", padx=10)
         
         # Separator
         separator = ctk.CTkLabel(
@@ -1677,6 +1711,7 @@ class TimeTraceUI:
             self.config_manager.set_setting("check_interval_seconds", check_interval)
             self.config_manager.set_setting("save_interval_seconds", save_interval)
             self.config_manager.set_setting("minimize_to_tray", self.minimize_to_tray_var.get())
+            self.config_manager.set_setting("run_at_startup", self.run_at_startup_var.get())
 
             # Save notifications settings
             self.config_manager.set_setting("quiet_hours_start", self.qh_start_var.get())
@@ -1684,6 +1719,12 @@ class TimeTraceUI:
             self.config_manager.set_setting("notification_snooze_minutes", int(self.snooze_var.get()))
             
             print("[TimeTraceUI] Advanced settings saved")
+
+            # Apply startup shortcut
+            try:
+                self._apply_startup_shortcut(self.run_at_startup_var.get())
+            except Exception as e:
+                print(f"[TimeTraceUI] Startup shortcut error: {e}")
             
             # Show success message
             message = ctk.CTkLabel(
@@ -1707,6 +1748,47 @@ class TimeTraceUI:
         self.qh_end_var.set("07:00")
         self.snooze_var.set("0")
         print("[TimeTraceUI] Advanced settings reset to defaults")
+
+    def _apply_startup_shortcut(self, enable: bool):
+        """Create or remove a Startup shortcut based on toggle."""
+        startup_dir = os.path.join(os.environ.get('AppData', ''),
+                                   'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup')
+        if not startup_dir:
+            raise RuntimeError("Startup directory not found")
+        shortcut_path = os.path.join(startup_dir, 'TimeTrace.lnk')
+
+        # Determine pythonw path
+        exe = sys.executable
+        if exe.lower().endswith('python.exe'):
+            pythonw = exe[:-10] + 'pythonw.exe'
+        else:
+            pythonw = exe  # if already pythonw or frozen exe
+
+        target_script = os.path.abspath(os.path.join(os.getcwd(), 'main.py'))
+
+        if enable:
+            try:
+                import win32com.client  # requires pywin32
+                shell = win32com.client.Dispatch('WScript.Shell')
+                shortcut = shell.CreateShortcut(shortcut_path)
+                shortcut.TargetPath = pythonw
+                shortcut.Arguments = f'"{target_script}"'
+                shortcut.WorkingDirectory = os.getcwd()
+                icon_path = os.path.abspath(os.path.join(os.getcwd(), 'icon.ico'))
+                if os.path.exists(icon_path):
+                    shortcut.IconLocation = icon_path
+                shortcut.Description = 'Launch TimeTrace on startup'
+                shortcut.Save()
+                print(f"[TimeTraceUI] Startup shortcut created at {shortcut_path}")
+            except ImportError:
+                raise RuntimeError("pywin32 not installed; cannot create startup shortcut")
+        else:
+            try:
+                if os.path.exists(shortcut_path):
+                    os.remove(shortcut_path)
+                    print("[TimeTraceUI] Startup shortcut removed")
+            except Exception as e:
+                print(f"[TimeTraceUI] Failed to remove startup shortcut: {e}")
     
     def _clear_old_data(self):
         """Clear data older than retention period."""
