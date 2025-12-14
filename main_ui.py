@@ -108,15 +108,20 @@ class TimeTraceUI:
         self.tab_charts = self.tabview.add("📈 Grafikler")
         self.tab_notifications = self.tabview.add("🔔 Bildirimler")
         self.tab_history = self.tabview.add("📅 Geçmiş")
-        self.tab_settings = self.tabview.add("⚙️ Watchlist")
+        self.tab_watchlist = self.tabview.add("⚙️ Watchlist")
+        self.tab_advanced_settings = self.tabview.add("🔧 Gelişmiş Ayarlar")
         self.tab_help = self.tabview.add("❓ Nasıl Kullanılır")
+        
+        # Keep old reference for backward compatibility
+        self.tab_settings = self.tab_watchlist
         
         # Setup each tab
         self._setup_dashboard_tab()
         self._setup_charts_tab()
         self._setup_notifications_tab()
         self._setup_history_tab()
-        self._setup_settings_tab()
+        self._setup_watchlist_tab()
+        self._setup_advanced_settings_tab()
         self._setup_help_tab()
     
     def _setup_dashboard_tab(self):
@@ -917,11 +922,11 @@ class TimeTraceUI:
             error_label.pack(pady=20)
             print(f"[TimeTraceUI] History search error: {e}")
     
-    def _setup_settings_tab(self):
-        """Setup the Watchlist/Settings tab."""
+    def _setup_watchlist_tab(self):
+        """Setup the Watchlist tab."""
         # Title
         title_label = ctk.CTkLabel(
-            self.tab_settings,
+            self.tab_watchlist,
             text="Uygulama İzleme Listesi",
             font=ctk.CTkFont(size=24, weight="bold")
         )
@@ -929,14 +934,14 @@ class TimeTraceUI:
         
         # Instructions
         instructions = ctk.CTkLabel(
-            self.tab_settings,
+            self.tab_watchlist,
             text="İzlemek istediğiniz uygulamaları ekleyin (örn: chrome.exe, valorant.exe, notepad.exe)",
             font=ctk.CTkFont(size=12)
         )
         instructions.pack(pady=5)
         
         # Popular apps section
-        popular_frame = ctk.CTkFrame(self.tab_settings)
+        popular_frame = ctk.CTkFrame(self.tab_watchlist)
         popular_frame.pack(pady=10, padx=20, fill="x")
         
         popular_label = ctk.CTkLabel(
@@ -976,7 +981,7 @@ class TimeTraceUI:
             btn.pack(side="left", padx=5, pady=5)
         
         # Running apps section
-        running_apps_frame = ctk.CTkFrame(self.tab_settings)
+        running_apps_frame = ctk.CTkFrame(self.tab_watchlist)
         running_apps_frame.pack(pady=10, padx=20, fill="x")
         
         running_label = ctk.CTkLabel(
@@ -1004,7 +1009,7 @@ class TimeTraceUI:
         refresh_running_btn.pack(pady=5)
         
         # Add app frame
-        add_frame = ctk.CTkFrame(self.tab_settings)
+        add_frame = ctk.CTkFrame(self.tab_watchlist)
         add_frame.pack(pady=20, padx=20, fill="x")
         
         add_label = ctk.CTkLabel(
@@ -1033,7 +1038,7 @@ class TimeTraceUI:
         
         # Watchlist title
         watchlist_title = ctk.CTkLabel(
-            self.tab_settings,
+            self.tab_watchlist,
             text="📋 İzlenen Uygulamalar:",
             font=ctk.CTkFont(size=14, weight="bold")
         )
@@ -1041,7 +1046,7 @@ class TimeTraceUI:
         
         # Scrollable frame for watchlist
         self.watchlist_frame = ctk.CTkScrollableFrame(
-            self.tab_settings,
+            self.tab_watchlist,
             width=700,
             height=200
         )
@@ -1290,6 +1295,297 @@ class TimeTraceUI:
                 categorized["📊 Diğer Uygulamalar"].append(app)
         
         return categorized
+    
+    def _setup_advanced_settings_tab(self):
+        """Setup the Advanced Settings tab for system configuration."""
+        # Title
+        title_label = ctk.CTkLabel(
+            self.tab_advanced_settings,
+            text="Gelişmiş Ayarlar",
+            font=ctk.CTkFont(size=24, weight="bold")
+        )
+        title_label.pack(pady=20)
+        
+        # Scrollable frame
+        settings_frame = ctk.CTkScrollableFrame(
+            self.tab_advanced_settings,
+            width=600,
+            height=400
+        )
+        settings_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # Check Interval Setting
+        check_frame = ctk.CTkFrame(settings_frame)
+        check_frame.pack(fill="x", padx=10, pady=15)
+        
+        check_label = ctk.CTkLabel(
+            check_frame,
+            text="⏱️ Kontrol Aralığı (saniye):",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            anchor="w"
+        )
+        check_label.pack(side="left", padx=10)
+        
+        current_check = self.config_manager.get_setting("check_interval_seconds") or 5
+        self.check_interval_var = ctk.StringVar(value=str(current_check))
+        
+        self.check_interval_entry = ctk.CTkEntry(
+            check_frame,
+            textvariable=self.check_interval_var,
+            width=100
+        )
+        self.check_interval_entry.pack(side="left", padx=10)
+        
+        check_info = ctk.CTkLabel(
+            check_frame,
+            text="Uygulamaların kontrol edilme sıklığı. Düşük değer = Daha fazla CPU kullanımı",
+            font=ctk.CTkFont(size=9),
+            text_color="gray"
+        )
+        check_info.pack(side="left", padx=10)
+        
+        # Save Interval Setting
+        save_frame = ctk.CTkFrame(settings_frame)
+        save_frame.pack(fill="x", padx=10, pady=15)
+        
+        save_label = ctk.CTkLabel(
+            save_frame,
+            text="💾 Kaydetme Aralığı (saniye):",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            anchor="w"
+        )
+        save_label.pack(side="left", padx=10)
+        
+        current_save = self.config_manager.get_setting("save_interval_seconds") or 60
+        self.save_interval_var = ctk.StringVar(value=str(current_save))
+        
+        self.save_interval_entry = ctk.CTkEntry(
+            save_frame,
+            textvariable=self.save_interval_var,
+            width=100
+        )
+        self.save_interval_entry.pack(side="left", padx=10)
+        
+        save_info = ctk.CTkLabel(
+            save_frame,
+            text="Verilerin veritabanına kaydedilme sıklığı",
+            font=ctk.CTkFont(size=9),
+            text_color="gray"
+        )
+        save_info.pack(side="left", padx=10)
+        
+        # Data Retention Setting
+        retention_frame = ctk.CTkFrame(settings_frame)
+        retention_frame.pack(fill="x", padx=10, pady=15)
+        
+        retention_label = ctk.CTkLabel(
+            retention_frame,
+            text="🗑️ Veri Saklama Süresi (gün):",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            anchor="w"
+        )
+        retention_label.pack(side="left", padx=10)
+        
+        self.retention_var = ctk.StringVar(value="90")
+        
+        self.retention_entry = ctk.CTkEntry(
+            retention_frame,
+            textvariable=self.retention_var,
+            width=100
+        )
+        self.retention_entry.pack(side="left", padx=10)
+        
+        retention_info = ctk.CTkLabel(
+            retention_frame,
+            text="Belirtilen günden eski kayıtlar otomatik silinir",
+            font=ctk.CTkFont(size=9),
+            text_color="gray"
+        )
+        retention_info.pack(side="left", padx=10)
+        
+        # Minimize to tray Setting
+        tray_frame = ctk.CTkFrame(settings_frame)
+        tray_frame.pack(fill="x", padx=10, pady=15)
+        
+        tray_label = ctk.CTkLabel(
+            tray_frame,
+            text="📌 Sistem Tray'a Küçült:",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            anchor="w"
+        )
+        tray_label.pack(side="left", padx=10)
+        
+        current_tray = self.config_manager.get_setting("minimize_to_tray")
+        self.minimize_to_tray_var = ctk.BooleanVar(value=current_tray if current_tray is not None else True)
+        
+        tray_switch = ctk.CTkSwitch(
+            tray_frame,
+            text="Aktif",
+            variable=self.minimize_to_tray_var,
+            onvalue=True,
+            offvalue=False
+        )
+        tray_switch.pack(side="left", padx=10)
+        
+        tray_info = ctk.CTkLabel(
+            tray_frame,
+            text="Pencereyi kapatırken sistem tray'a küçültülüp açık kalır",
+            font=ctk.CTkFont(size=9),
+            text_color="gray"
+        )
+        tray_info.pack(side="left", padx=10)
+        
+        # Separator
+        separator = ctk.CTkLabel(
+            settings_frame,
+            text="─" * 80,
+            text_color="#444444"
+        )
+        separator.pack(pady=20)
+        
+        # Database management section
+        db_label = ctk.CTkLabel(
+            settings_frame,
+            text="📊 Veritabanı Yönetimi",
+            font=ctk.CTkFont(size=14, weight="bold")
+        )
+        db_label.pack(anchor="w", padx=10, pady=10)
+        
+        # Clear old data button
+        clear_btn = ctk.CTkButton(
+            settings_frame,
+            text="🗑️ Eski Verileri Temizle",
+            command=self._clear_old_data,
+            width=200
+        )
+        clear_btn.pack(padx=10, pady=5)
+        
+        # Export data button
+        export_btn = ctk.CTkButton(
+            settings_frame,
+            text="📤 Verileri Dışa Aktar (CSV)",
+            command=self._export_data,
+            width=200
+        )
+        export_btn.pack(padx=10, pady=5)
+        
+        # Separator
+        separator2 = ctk.CTkLabel(
+            settings_frame,
+            text="─" * 80,
+            text_color="#444444"
+        )
+        separator2.pack(pady=20)
+        
+        # Save and Reset buttons
+        button_frame = ctk.CTkFrame(self.tab_advanced_settings)
+        button_frame.pack(pady=20, padx=20, fill="x")
+        
+        reset_btn = ctk.CTkButton(
+            button_frame,
+            text="🔄 Varsayılana Sıfırla",
+            command=self._reset_advanced_settings,
+            width=150
+        )
+        reset_btn.pack(side="left", padx=5)
+        
+        save_btn = ctk.CTkButton(
+            button_frame,
+            text="💾 Ayarları Kaydet",
+            command=self._save_advanced_settings,
+            width=150
+        )
+        save_btn.pack(side="left", padx=5)
+    
+    def _save_advanced_settings(self):
+        """Save advanced settings."""
+        try:
+            # Save numeric settings
+            check_interval = int(self.check_interval_var.get())
+            save_interval = int(self.save_interval_var.get())
+            
+            if check_interval < 1 or save_interval < 1:
+                raise ValueError("Aralıklar 1 saniyeden az olamaz")
+            
+            self.config_manager.set_setting("check_interval_seconds", check_interval)
+            self.config_manager.set_setting("save_interval_seconds", save_interval)
+            self.config_manager.set_setting("minimize_to_tray", self.minimize_to_tray_var.get())
+            
+            print("[TimeTraceUI] Advanced settings saved")
+            
+            # Show success message
+            message = ctk.CTkLabel(
+                self.tab_advanced_settings,
+                text="✓ Ayarlar başarıyla kaydedildi!",
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color="#00FF00"
+            )
+            message.pack(pady=10)
+            self.root.after(3000, message.destroy)
+            
+        except ValueError as e:
+            print(f"[TimeTraceUI] Error saving settings: {e}")
+    
+    def _reset_advanced_settings(self):
+        """Reset advanced settings to defaults."""
+        self.check_interval_var.set("5")
+        self.save_interval_var.set("60")
+        self.minimize_to_tray_var.set(True)
+        print("[TimeTraceUI] Advanced settings reset to defaults")
+    
+    def _clear_old_data(self):
+        """Clear data older than retention period."""
+        try:
+            retention_days = int(self.retention_var.get())
+            self.db_manager.clear_old_data(retention_days)
+            
+            # Show success message
+            message = ctk.CTkLabel(
+                self.tab_advanced_settings,
+                text=f"✓ {retention_days} günden eski veriler silindi!",
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color="#00FF00"
+            )
+            message.pack(pady=10)
+            self.root.after(3000, message.destroy)
+            
+            print(f"[TimeTraceUI] Old data cleared (retention: {retention_days} days)")
+            
+        except Exception as e:
+            print(f"[TimeTraceUI] Error clearing old data: {e}")
+    
+    def _export_data(self):
+        """Export usage data to CSV file."""
+        import csv
+        from datetime import datetime
+        
+        try:
+            filename = f"timetraces_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            
+            stats = self.db_manager.get_month_stats()
+            
+            with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["Uygulama", "Saat"])
+                
+                for app_name, seconds in sorted(stats.items(), key=lambda x: x[1], reverse=True):
+                    hours = seconds / 3600
+                    writer.writerow([app_name, f"{hours:.2f}"])
+            
+            # Show success message
+            message = ctk.CTkLabel(
+                self.tab_advanced_settings,
+                text=f"✓ Veriler {filename} olarak dışa aktarıldı!",
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color="#00FF00"
+            )
+            message.pack(pady=10)
+            self.root.after(3000, message.destroy)
+            
+            print(f"[TimeTraceUI] Data exported to {filename}")
+            
+        except Exception as e:
+            print(f"[TimeTraceUI] Error exporting data: {e}")
     
     def _setup_help_tab(self):
         """Setup the Help/Tutorial tab."""
