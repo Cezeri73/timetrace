@@ -11,6 +11,7 @@ from pystray import MenuItem as item
 from database_manager import DatabaseManager
 from config_manager import ConfigManager
 from monitor_service import AppMonitor
+from notification_service import NotificationService
 from main_ui import TimeTraceUI
 
 
@@ -28,6 +29,7 @@ class TimeTraceApp:
         self.db_manager = DatabaseManager("tracker.db")
         self.config_manager = ConfigManager("settings.json")
         self.monitor = AppMonitor(self.db_manager, self.config_manager)
+        self.notification_service = NotificationService(self.db_manager, self.config_manager)
         
         # UI will be created in run()
         self.ui = None
@@ -135,6 +137,10 @@ class TimeTraceApp:
         
         self.is_running = False
         
+        # Stop notification service
+        if self.notification_service:
+            self.notification_service.stop()
+        
         # Stop monitoring
         if self.monitor:
             self.monitor.stop()
@@ -165,6 +171,9 @@ class TimeTraceApp:
             # Start monitoring service
             self.monitor.start()
             
+            # Start notification service
+            self.notification_service.start()
+            
             # Create system tray icon
             self.create_tray_icon()
             
@@ -177,6 +186,7 @@ class TimeTraceApp:
                 self.db_manager,
                 self.config_manager,
                 self.monitor,
+                self.notification_service,
                 on_close_callback=self._on_window_close
             )
             

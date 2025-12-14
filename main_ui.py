@@ -63,7 +63,7 @@ class TimeTraceUI:
     """
     
     def __init__(self, db_manager: DatabaseManager, config_manager: ConfigManager, 
-                 monitor: AppMonitor, on_close_callback: Callable = None):
+                 monitor: AppMonitor, notification_service=None, on_close_callback: Callable = None):
         """
         Initialize the TimeTrace UI.
         
@@ -71,11 +71,13 @@ class TimeTraceUI:
             db_manager: DatabaseManager instance
             config_manager: ConfigManager instance
             monitor: AppMonitor instance
+            notification_service: NotificationService instance (optional)
             on_close_callback: Function to call when window is closed
         """
         self.db_manager = db_manager
         self.config_manager = config_manager
         self.monitor = monitor
+        self.notification_service = notification_service
         self.on_close_callback = on_close_callback
         
         # Set appearance mode and color theme
@@ -104,12 +106,14 @@ class TimeTraceUI:
         # Add tabs
         self.tab_dashboard = self.tabview.add("📊 Dashboard")
         self.tab_charts = self.tabview.add("📈 Grafikler")
+        self.tab_notifications = self.tabview.add("🔔 Bildirimler")
         self.tab_settings = self.tabview.add("⚙️ Watchlist")
         self.tab_help = self.tabview.add("❓ Nasıl Kullanılır")
         
         # Setup each tab
         self._setup_dashboard_tab()
         self._setup_charts_tab()
+        self._setup_notifications_tab()
         self._setup_settings_tab()
         self._setup_help_tab()
     
@@ -506,6 +510,161 @@ class TimeTraceUI:
             )
             error_label.pack(pady=20)
             print(f"[TimeTraceUI] Chart error: {e}")
+    
+    def _setup_notifications_tab(self):
+        """Setup the Notifications tab for threshold configuration."""
+        # Title
+        title_label = ctk.CTkLabel(
+            self.tab_notifications,
+            text="Kullanım Uyarıları",
+            font=ctk.CTkFont(size=24, weight="bold")
+        )
+        title_label.pack(pady=20)
+        
+        # Info section
+        info_frame = ctk.CTkFrame(self.tab_notifications)
+        info_frame.pack(pady=10, padx=20, fill="x")
+        
+        info_label = ctk.CTkLabel(
+            info_frame,
+            text="ℹ️ Bilgi: Belirlediğiniz saat sınırına ulaştığında, masaüstü bildirim alacaksınız.",
+            font=ctk.CTkFont(size=12),
+            text_color="#FFD700"
+        )
+        info_label.pack(anchor="w", padx=10, pady=5)
+        
+        # Thresholds section
+        thresholds_frame = ctk.CTkFrame(self.tab_notifications)
+        thresholds_frame.pack(pady=20, padx=20, fill="both", expand=True)
+        
+        thresholds_label = ctk.CTkLabel(
+            thresholds_frame,
+            text="⏰ Uygulama Saat Sınırları",
+            font=ctk.CTkFont(size=16, weight="bold")
+        )
+        thresholds_label.pack(anchor="w", pady=10)
+        
+        # Scrollable frame for threshold settings
+        self.thresholds_scroll = ctk.CTkScrollableFrame(
+            thresholds_frame,
+            width=600,
+            height=300
+        )
+        self.thresholds_scroll.pack(fill="both", expand=True, padx=10)
+        
+        # Load current thresholds from notification service
+        self._load_notification_thresholds()
+        
+        # Button frame
+        button_frame = ctk.CTkFrame(self.tab_notifications)
+        button_frame.pack(pady=20, padx=20, fill="x")
+        
+        reset_btn = ctk.CTkButton(
+            button_frame,
+            text="🔄 Varsayılana Sıfırla",
+            command=self._reset_notification_thresholds,
+            width=150
+        )
+        reset_btn.pack(side="left", padx=5)
+        
+        save_btn = ctk.CTkButton(
+            button_frame,
+            text="💾 Ayarları Kaydet",
+            command=self._save_notification_thresholds,
+            width=150
+        )
+        save_btn.pack(side="left", padx=5)
+    
+    def _load_notification_thresholds(self):
+        """Load and display notification thresholds."""
+        if not self.notification_service:
+            return
+        
+        # Get watchlist from config
+        watchlist = self.config_manager.get_watchlist()
+        
+        self.threshold_entries = {}
+        
+        for app_name in sorted(watchlist):
+            threshold = self.notification_service.get_threshold(app_name)
+            
+            app_frame = ctk.CTkFrame(self.thresholds_scroll)
+            app_frame.pack(fill="x", padx=5, pady=5)
+            
+            # App name label
+            label = ctk.CTkLabel(
+                app_frame,
+                text=app_name.replace(".exe", ""),
+                font=ctk.CTkFont(size=11, weight="bold"),
+                anchor="w",
+                width=150
+            )
+            label.pack(side="left", padx=10)
+            
+            # Entry for threshold
+            entry = ctk.CTkEntry(
+                app_frame,
+                placeholder_text="Saat",
+                width=80
+            )
+            entry.insert(0, str(threshold))
+            entry.pack(side="left", padx=5)
+            
+            # Unit label
+            unit_label = ctk.CTkLabel(
+                app_frame,
+                text="Saat",
+                font=ctk.CTkFont(size=10),
+                text_color="gray"
+            )
+            unit_label.pack(side="left", padx=5)
+            
+            self.threshold_entries[app_name] = entry
+    
+    def _save_notification_thresholds(self):
+        """Save notification thresholds."""
+        if not self.notification_service:
+            return
+        
+        try:
+            for app_name, entry in self.threshold_entries.items():
+                try:
+                    threshold = float(entry.get())
+                    self.notification_service.set_threshold(app_name, threshold)
+                except ValueError:
+                    print(f"[TimeTraceUI] Invalid threshold for {app_name}")
+            
+            print("[TimeTraceUI] Notification thresholds saved")
+            
+            # Show success message
+            message = ctk.CTkLabel(
+                self.tab_notifications,
+                text="✓ Ayarlar başarıyla kaydedildi!",
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color="#00FF00"
+            )
+            message.pack(pady=10)
+            
+            # Auto-remove after 3 seconds
+            self.root.after(3000, message.destroy)
+            
+        except Exception as e:
+            print(f"[TimeTraceUI] Error saving thresholds: {e}")
+    
+    def _reset_notification_thresholds(self):
+        """Reset notification thresholds to defaults."""
+        if not self.notification_service:
+            return
+        
+        self.notification_service.reset_thresholds()
+        
+        # Reload the thresholds display
+        for widget in self.thresholds_scroll.winfo_children():
+            widget.destroy()
+        
+        self._load_notification_thresholds()
+        
+        print("[TimeTraceUI] Notification thresholds reset to defaults")
     
     def _setup_settings_tab(self):
         """Setup the Watchlist/Settings tab."""
