@@ -7,6 +7,8 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
+[![Download Installer](https://img.shields.io/badge/Download-Installer-blue)](install.ps1)
+[![Download EXE](https://img.shields.io/badge/Download-EXE-darkgreen)](https://github.com/Cezeri73/timetrace/releases)
 
 **[English](#english)** | **[Türkçe](#turkish)**
 
@@ -45,11 +47,19 @@
 
 On Windows, you can use the one-click installer:
 
-1. Download `install.ps1` from the repository root.
+1. Download `install.ps1` from the repository root or click the badge above.
 2. Right-click the file and select "Run with PowerShell".
 3. If you see a policy warning, run: `powershell -ExecutionPolicy Bypass -File install.ps1`.
 4. The installer downloads the latest code, creates a virtual environment, installs dependencies, and creates shortcuts.
 5. Launch from Desktop or Start Menu. The app runs without a console window.
+
+#### Installation (EXE)
+
+Download the prebuilt EXE from the **Releases** page and double‑click:
+
+1. Go to GitHub Releases: https://github.com/Cezeri73/timetrace/releases
+2. Download `TimeTrace.exe`
+3. Double‑click to run (no Python required)
 
 #### Installation (Manual)
 
@@ -191,7 +201,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Windows için tek tıkla kurulum kullanabilirsiniz:
 
-1. Depo kök klasöründen `install.ps1` dosyasını indirin.
+1. Depo kök klasöründen `install.ps1` dosyasını indirin veya yukarıdaki rozetten tıklayın.
+#### EXE Kurulum (Hızlı)
+
+Önceden derlenmiş EXE’yi **Releases** sayfasından indirip çift tıklayın:
+
+1. GitHub Releases: https://github.com/Cezeri73/timetrace/releases
+2. `TimeTrace.exe` dosyasını indirin
+3. Çift tıklayın (Python gerekmez)
 2. Dosyaya sağ tıklayın ve "PowerShell ile Çalıştır" seçin.
 3. Politika uyarısı görürseniz: `powershell -ExecutionPolicy Bypass -File install.ps1` komutunu çalıştırın.
 4. En son kodu indirir, sanal ortam oluşturur, bağımlılıkları kurar ve kısayolları ekler.
