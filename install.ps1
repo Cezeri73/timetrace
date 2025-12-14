@@ -46,6 +46,7 @@ $python = Get-PythonCmd
 Push-Location $repoDir.FullName
 & $python -m venv .venv
 $venvPython = Join-Path $repoDir.FullName ".venv\Scripts\python.exe"
+${venvPythonW} = Join-Path $repoDir.FullName ".venv\Scripts\pythonw.exe"
 & $venvPython -m pip install --upgrade pip
 & $venvPython -m pip install -r requirements.txt
 
@@ -57,7 +58,7 @@ try {
 	$shortcutPath = Join-Path $desktop 'TimeTrace.lnk'
 	$WshShell = New-Object -ComObject WScript.Shell
 	$Shortcut = $WshShell.CreateShortcut($shortcutPath)
-	$Shortcut.TargetPath = $venvPython
+	$Shortcut.TargetPath = $venvPythonW
 	$Shortcut.Arguments = '"' + (Join-Path $repoDir.FullName 'main.py') + '"'
 	$Shortcut.WorkingDirectory = $repoDir.FullName
 	$Shortcut.IconLocation = (Join-Path $repoDir.FullName 'icon.ico')
@@ -69,7 +70,7 @@ try {
 	$startMenu = Join-Path $env:AppData 'Microsoft\\Windows\\Start Menu\\Programs'
 	$startShortcutPath = Join-Path $startMenu 'TimeTrace.lnk'
 	$StartShortcut = $WshShell.CreateShortcut($startShortcutPath)
-	$StartShortcut.TargetPath = $venvPython
+	$StartShortcut.TargetPath = $venvPythonW
 	$StartShortcut.Arguments = '"' + (Join-Path $repoDir.FullName 'main.py') + '"'
 	$StartShortcut.WorkingDirectory = $repoDir.FullName
 	$StartShortcut.IconLocation = (Join-Path $repoDir.FullName 'icon.ico')
@@ -80,7 +81,7 @@ try {
 	Write-Host "Shortcut creation skipped: $_" -ForegroundColor Yellow
 }
 
-Write-Host "You can launch from the Desktop shortcut or run:" -ForegroundColor Green
-Write-Host "`n$venvPython ""$(Join-Path $repoDir.FullName 'main.py')""" -ForegroundColor Yellow
+Write-Host "You can launch from the Desktop/Start Menu shortcuts or run without console:" -ForegroundColor Green
+Write-Host "`n$venvPythonW ""$(Join-Path $repoDir.FullName 'main.py')""" -ForegroundColor Yellow
 
 Pop-Location

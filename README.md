@@ -47,8 +47,9 @@ On Windows, you can use the one-click installer:
 
 1. Download `install.ps1` from the repository root.
 2. Right-click the file and select "Run with PowerShell".
-3. It will download the latest code, create a virtual environment, and install dependencies.
-4. At the end, it prints the exact command to run the app.
+3. If you see a policy warning, run: `powershell -ExecutionPolicy Bypass -File install.ps1`.
+4. The installer downloads the latest code, creates a virtual environment, installs dependencies, and creates shortcuts.
+5. Launch from Desktop or Start Menu. The app runs without a console window.
 
 #### Installation (Manual)
 
@@ -60,8 +61,8 @@ cd timetrace
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the application
-python main.py
+# Run the application (no console window)
+pythonw main.py
 ```
 
 ### 📱 Usage
@@ -192,8 +193,9 @@ Windows için tek tıkla kurulum kullanabilirsiniz:
 
 1. Depo kök klasöründen `install.ps1` dosyasını indirin.
 2. Dosyaya sağ tıklayın ve "PowerShell ile Çalıştır" seçin.
-3. En son kodu indirir, sanal ortam oluşturur ve bağımlılıkları kurar.
-4. Sonunda uygulamayı çalıştırmak için komutu görüntüler.
+3. Politika uyarısı görürseniz: `powershell -ExecutionPolicy Bypass -File install.ps1` komutunu çalıştırın.
+4. En son kodu indirir, sanal ortam oluşturur, bağımlılıkları kurar ve kısayolları ekler.
+5. Masaüstü veya Başlat Menüsü kısayolundan başlatın. Uygulama konsol penceresi olmadan çalışır.
 
 #### Kurulum (Manuel)
 
