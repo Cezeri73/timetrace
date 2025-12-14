@@ -7,8 +7,8 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
-[![Download Setup](https://img.shields.io/badge/Download-Setup.exe-blue)](https://github.com/Cezeri73/timetrace/releases)
-[![Download Portable](https://img.shields.io/badge/Download-Portable.zip-darkgreen)](https://github.com/Cezeri73/timetrace/releases)
+[![GitHub Release](https://img.shields.io/badge/Release-v1.0.0-blue)](https://github.com/Cezeri73/timetrace/releases)
+[![Download Script](https://img.shields.io/badge/Download-install.ps1-darkgreen)](https://raw.githubusercontent.com/Cezeri73/timetrace/main/install.ps1)
 
 **[English](#english)** | **[Türkçe](#turkish)**
 
@@ -48,40 +48,17 @@
 
 **Choose one of the following methods:**
 
-##### 🎯 Method 1: Windows Installer (Recommended)
+##### ⚡ Method 1: PowerShell Installer (Recommended)
 
-**One-click professional installation:**
+**One-click installation via script:**
 
-1. Download **[TimeTrace-Setup.exe](https://github.com/Cezeri73/timetrace/releases)** from the latest release
-2. Run the installer and follow the setup wizard
-3. Launch from Desktop shortcut or Start Menu
-4. That's it! No Python required, no console window
-
-**Features:**
-- ✅ Installs to Program Files
-- ✅ Creates Desktop & Start Menu shortcuts
-- ✅ Appears in Windows Add/Remove Programs
-- ✅ Professional uninstaller included
-
-##### 💼 Method 2: Portable ZIP
-
-**No installation, just extract and run:**
-
-1. Download **[TimeTrace-v1.0.0.zip](https://github.com/Cezeri73/timetrace/releases)** from the latest release
-2. Extract the ZIP file to any folder
-3. Double-click `TimeTrace.exe` to run
-4. No Python required, portable version
-
-##### ⚡ Method 3: PowerShell Installer
-
-**For developers who prefer script installation:**
-
-1. Download `install.ps1` from the repository
+1. Download **[install.ps1](https://raw.githubusercontent.com/Cezeri73/timetrace/main/install.ps1)** (Right-click → Save As)
 2. Run: `powershell -ExecutionPolicy Bypass -File install.ps1`
-3. The script creates a Python venv, installs dependencies, and creates shortcuts
+3. The script downloads latest code, creates venv, installs dependencies, and creates shortcuts
 4. Launch from Desktop or Start Menu
+5. No console window, runs with pythonw.exe
 
-##### 🔧 Method 4: Manual Setup (For Development)
+##### 🔧 Method 2: Manual Setup (For Development)
 
 **Clone and run from source:**
 
@@ -101,7 +78,7 @@ pip install -r requirements.txt
 pythonw main.py
 ```
 
-**Or visit:** [Releases Page](https://github.com/Cezeri73/timetrace/releases) for all download options
+**Or visit:** [Releases Page](https://github.com/Cezeri73/timetrace/releases) for binary downloads (coming soon)
 
 ### 📱 Usage
 
@@ -257,40 +234,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Aşağıdaki yöntemlerden birini seçin:**
 
-##### 🎯 Yöntem 1: Windows Kurulum Sihirbazı (Önerilen)
+##### ⚡ Yöntem 1: PowerShell Kurulum Scripti (Önerilen)
 
-**Tek tıkla profesyonel kurulum:**
+**Script ile tek tıkla kurulum:**
 
-1. En son sürümden **[TimeTrace-Setup.exe](https://github.com/Cezeri73/timetrace/releases)** indirin
-2. Kurulum dosyasını çalıştırın ve kurulum sihirbazını takip edin
-3. Masaüstü kısayolu veya Başlat Menüsü'nden başlatın
-4. Hepsi bu kadar! Python gerekmez, konsol penceresi yok
-
-**Özellikler:**
-- ✅ Program Files'a kurulum
-- ✅ Masaüstü & Başlat Menüsü kısayolları
-- ✅ Windows Programlar ve Özellikler'de görünür
-- ✅ Profesyonel kaldırma programı dahil
-
-##### 💼 Yöntem 2: Taşınabilir ZIP
-
-**Kurulum yok, sadece çıkart ve çalıştır:**
-
-1. En son sürümden **[TimeTrace-v1.0.0.zip](https://github.com/Cezeri73/timetrace/releases)** indirin
-2. ZIP dosyasını istediğiniz klasöre çıkartın
-3. `TimeTrace.exe` dosyasına çift tıklayın
-4. Python gerekmez, taşınabilir sürüm
-
-##### ⚡ Yöntem 3: PowerShell Kurulum Scripti
-
-**Geliştiriciler için script kurulumu:**
-
-1. Depodan `install.ps1` dosyasını indirin
+1. **[install.ps1](https://raw.githubusercontent.com/Cezeri73/timetrace/main/install.ps1)** indirin (Sağ tık → Farklı Kaydet)
 2. Çalıştırın: `powershell -ExecutionPolicy Bypass -File install.ps1`
-3. Script Python venv oluşturur, bağımlılıkları kurar ve kısayollar ekler
+3. Script en son kodu indirir, venv oluşturur, bağımlılıkları kurar ve kısayollar ekler
 4. Masaüstü veya Başlat Menüsü'nden başlatın
+5. Konsol penceresi yok, pythonw.exe ile çalışır
 
-##### 🔧 Yöntem 4: Manuel Kurulum (Geliştirme İçin)
+##### 🔧 Yöntem 2: Manuel Kurulum (Geliştirme İçin)
 
 **Kaynak koddan çalıştırın:**
 
@@ -310,7 +264,7 @@ pip install -r requirements.txt
 pythonw main.py
 ```
 
-**Veya ziyaret edin:** [Releases Sayfası](https://github.com/Cezeri73/timetrace/releases) tüm indirme seçenekleri için
+**Veya ziyaret edin:** [Releases Sayfası](https://github.com/Cezeri73/timetrace/releases) binary indirmeleri için (yakında)
 
 ### 📱 Kullanım
 
